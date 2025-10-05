@@ -1,0 +1,737 @@
+'use client';
+
+import React, { useState } from 'react';
+import { Layout } from '@/components/layout/Layout';
+import { Card } from '@/components/ui/Card';
+import { LineChart, Line, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, AreaChart, Area } from 'recharts';
+import { TrendingUp, Users, Phone, Mail, Globe, Target, DollarSign, Download, Eye, Play, MessageCircle, MapPin, Clock } from 'lucide-react';
+import { useHydrated } from '@/hooks/useHydrated';
+
+/**
+ * Dashboard de Indicadores Mensais - Palma Parafusos
+ * Exibe todas as métricas específicas do negócio organizadas por categorias
+ */
+export default function MonthlyIndicatorsPage() {
+  const isHydrated = useHydrated();
+  const [selectedYear, setSelectedYear] = useState('2025');
+  const [selectedCategory, setSelectedCategory] = useState('all');
+
+  if (!isHydrated) {
+    return <div>Carregando...</div>;
+  }
+
+  // Dados mock completos baseados nos indicadores da Palma Parafusos
+  const monthlyData = [
+    { 
+      month: 'Jan',
+      // PUBLICAÇÕES
+      publicacoesFacebook: 25, publicacoesInstagram: 30, publicacoesLinkedIn: 15, publicacoesTikTok: 20, publicacoesYoutubeShorts: 8,
+      // REDES SOCIAIS
+      seguidoresFacebook: 12500, seguidoresInstagram: 8900, seguidoresLinkedIn: 2100, seguidoresTikTok: 1500, inscritosYoutube: 850,
+      alcanceMedioPostFeed: 12.5, engajamentoInstagram: 4.2, alcanceMedioStorys: 2.1, pessoasSeguindo: 450,
+      // VISUALIZAÇÕES / ALCANCE / ENGAJAMENTO
+      alcanceVisualizacoesFacebook: 45000, mediaEngajamentoInstagram: 4.2, engajamentoPublicacaoFacebook: 3.8,
+      alcanceVisualizacoesYoutube: 12000, tempoExibicaoYoutube: 180, alcanceVideosYoutube: 8500, duracaoMediaVisualizacao: 2.3,
+      // LEADS
+      leadsFacebookReativos: 20, leadsInstagramReativos: 15, leadsSiteReativos: 45, leadsWhatsappRecife: 65, leadsTotal: 145,
+      totalPessoasAtendidas: 145,
+      // FATURAMENTO
+      faturamentoOnline: 85000, vendasRealizadas: 42, ticketMedio: 2024,
+      // SITE
+      visitasSite: 3200, usuariosSite: 2100, visitasPorUsuario: 1.52, novosUsuarios: 1680, taxaNovosUsuarios: 80,
+      tempoMedioEngajamento: 3.2, paginasVisitadas: 4800, taxaVisualizacoesPaginas: 1.5, numeroEventos: 2400,
+      numeroSessoes: 2800, taxaEventosSessoes: 0.86, taxaSessoesUsuarios: 1.33, taxaRejeicao: 45,
+      // GMN RECIFE
+      valorInvestidoGoogleRecife: 2200, ligacoesGoogleRecife: 44, cplRecife: 50, acessosComoChegar: 120,
+      cpcComoChegar: 18.33, visitasSiteGoogleRecife: 280, cpcSiteRecife: 7.86, pessoasAlcancadasRecife: 8500,
+      // GMN CABO
+      valorInvestidoGoogleCabo: 2300, ligacoesGoogleCabo: 45, cplCabo: 51.11, acessosComoChegar: 110,
+      cpcComoChegar: 20.91, visitasSiteGoogleCabo: 260, cpcSiteCabo: 8.85, pessoasAlcancadasCabo: 7800,
+      // EMAIL MARKETING
+      emailsValidosBase: 15000, tiposEmailsEnviados: 3, emailsEnviados: 2500, mediaPessoasEmail: 833,
+      emailsAbertos: 875, mediaEmailsAbertosPessoa: 1.05, clicksBotoesEmail: 125, mediaClicksBotoes: 0.15,
+      emailsCancelados: 12,
+      // TELEFONEMAS RECIFE
+      ligacoesRecebidasRecife: 180, ligacoesAtendidasRecife: 162, ligacoesAbandonadasRecife: 18,
+      percentualAtendidasRecife: 90, tempoMedioAtendimentoRecife: 25, percentualGoogleRecife: 35,
+      // TELEFONEMAS CABO
+      ligacoesRecebidasCabo: 140, ligacoesAtendidasCabo: 126, ligacoesAbandonadasCabo: 14,
+      percentualAtendidasCabo: 90, tempoMedioAtendimentoCabo: 28, percentualGoogleCabo: 32,
+      // TELEFONEMAS GERAL
+      ligacoesRecebidasGeral: 320, ligacoesAtendidasGeral: 288, ligacoesAbandonadasGeral: 32,
+      percentualAtendidasGeral: 90, tempoMedioAtendimentoGeral: 26.5, percentualGoogleGeral: 33.5
+    },
+    { 
+      month: 'Fev',
+      // PUBLICAÇÕES
+      publicacoesFacebook: 28, publicacoesInstagram: 32, publicacoesLinkedIn: 18, publicacoesTikTok: 22, publicacoesYoutubeShorts: 10,
+      // REDES SOCIAIS
+      seguidoresFacebook: 12750, seguidoresInstagram: 9200, seguidoresLinkedIn: 2180, seguidoresTikTok: 1620, inscritosYoutube: 890,
+      alcanceMedioPostFeed: 13.2, engajamentoInstagram: 4.5, alcanceMedioStorys: 2.3, pessoasSeguindo: 465,
+      // VISUALIZAÇÕES / ALCANCE / ENGAJAMENTO
+      alcanceVisualizacoesFacebook: 48000, mediaEngajamentoInstagram: 4.5, engajamentoPublicacaoFacebook: 4.1,
+      alcanceVisualizacoesYoutube: 13500, tempoExibicaoYoutube: 195, alcanceVideosYoutube: 9200, duracaoMediaVisualizacao: 2.4,
+      // LEADS
+      leadsFacebookReativos: 23, leadsInstagramReativos: 15, leadsSiteReativos: 52, leadsWhatsappRecife: 72, leadsTotal: 162,
+      totalPessoasAtendidas: 162,
+      // FATURAMENTO
+      faturamentoOnline: 92000, vendasRealizadas: 46, ticketMedio: 2000,
+      // SITE
+      visitasSite: 3450, usuariosSite: 2280, visitasPorUsuario: 1.51, novosUsuarios: 1824, taxaNovosUsuarios: 80,
+      tempoMedioEngajamento: 3.3, paginasVisitadas: 5175, taxaVisualizacoesPaginas: 1.5, numeroEventos: 2587,
+      numeroSessoes: 3015, taxaEventosSessoes: 0.86, taxaSessoesUsuarios: 1.32, taxaRejeicao: 44,
+      // GMN RECIFE
+      valorInvestidoGoogleRecife: 2400, ligacoesGoogleRecife: 48, cplRecife: 50, acessosComoChegar: 130,
+      cpcComoChegar: 18.46, visitasSiteGoogleRecife: 300, cpcSiteRecife: 8.00, pessoasAlcancadasRecife: 9000,
+      // GMN CABO
+      valorInvestidoGoogleCabo: 2400, ligacoesGoogleCabo: 48, cplCabo: 50, acessosComoChegar: 115,
+      cpcComoChegar: 20.87, visitasSiteGoogleCabo: 280, cpcSiteCabo: 8.57, pessoasAlcancadasCabo: 8200,
+      // EMAIL MARKETING
+      emailsValidosBase: 15200, tiposEmailsEnviados: 3, emailsEnviados: 2800, mediaPessoasEmail: 933,
+      emailsAbertos: 980, mediaEmailsAbertosPessoa: 1.05, clicksBotoesEmail: 147, mediaClicksBotoes: 0.15,
+      emailsCancelados: 15,
+      // TELEFONEMAS RECIFE
+      ligacoesRecebidasRecife: 195, ligacoesAtendidasRecife: 175, ligacoesAbandonadasRecife: 20,
+      percentualAtendidasRecife: 89.7, tempoMedioAtendimentoRecife: 24, percentualGoogleRecife: 36,
+      // TELEFONEMAS CABO
+      ligacoesRecebidasCabo: 150, ligacoesAtendidasCabo: 135, ligacoesAbandonadasCabo: 15,
+      percentualAtendidasCabo: 90, tempoMedioAtendimentoCabo: 27, percentualGoogleCabo: 33,
+      // TELEFONEMAS GERAL
+      ligacoesRecebidasGeral: 345, ligacoesAtendidasGeral: 310, ligacoesAbandonadasGeral: 35,
+      percentualAtendidasGeral: 89.9, tempoMedioAtendimentoGeral: 25.5, percentualGoogleGeral: 34.5
+    }
+  ];
+
+  const currentMonth = monthlyData[monthlyData.length - 1];
+  const previousMonth = monthlyData[monthlyData.length - 2];
+
+  const calculateGrowth = (current: number, previous: number) => {
+    return ((current - previous) / previous * 100).toFixed(1);
+  };
+
+  return (
+    <Layout title="Indicadores Mensais - Palma Parafusos">
+      <div className="space-y-8">
+        {/* Header */}
+        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+          <div>
+            <h1 className="text-3xl font-bold text-gray-900">Indicadores Mensais</h1>
+            <p className="text-gray-600 mt-1">Palma Parafusos - Análise Completa de Performance 2025</p>
+          </div>
+          
+          <div className="flex flex-wrap gap-3">
+            <select 
+              value={selectedYear} 
+              onChange={(e) => setSelectedYear(e.target.value)}
+              className="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+            >
+              <option value="2025">2025</option>
+              <option value="2024">2024</option>
+            </select>
+            
+            <select 
+              value={selectedCategory} 
+              onChange={(e) => setSelectedCategory(e.target.value)}
+              className="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+            >
+              <option value="all">Todas as Categorias</option>
+              <option value="publicacoes">Publicações</option>
+              <option value="social">Redes Sociais</option>
+              <option value="engajamento">Visualizações/Alcance</option>
+              <option value="leads">Leads</option>
+              <option value="faturamento">Faturamento</option>
+              <option value="site">Site</option>
+              <option value="gmn">Google Meu Negócio</option>
+              <option value="email">Email Marketing</option>
+              <option value="telefone">Telefonemas</option>
+            </select>
+            
+            <button className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors">
+              <Download className="w-4 h-4" />
+              Exportar
+            </button>
+          </div>
+        </div>
+
+        {/* KPIs Principais */}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+          <Card className="p-6">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm font-medium text-gray-600">Leads Total</p>
+                <p className="text-2xl font-bold text-gray-900">{currentMonth.leadsTotal}</p>
+              </div>
+              <div className="p-3 bg-blue-100 rounded-full">
+                <Target className="w-6 h-6 text-blue-600" />
+              </div>
+            </div>
+            <div className="flex items-center mt-4 text-sm">
+              <TrendingUp className="w-4 h-4 text-green-500 mr-1" />
+              <span className="text-green-600">+{calculateGrowth(currentMonth.leadsTotal, previousMonth.leadsTotal)}%</span>
+              <span className="text-gray-500 ml-1">vs mês anterior</span>
+            </div>
+          </Card>
+
+          <Card className="p-6">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm font-medium text-gray-600">Faturamento Online</p>
+                <p className="text-2xl font-bold text-gray-900">R$ {(currentMonth.faturamentoOnline / 1000).toFixed(0)}k</p>
+              </div>
+              <div className="p-3 bg-green-100 rounded-full">
+                <DollarSign className="w-6 h-6 text-green-600" />
+              </div>
+            </div>
+            <div className="flex items-center mt-4 text-sm">
+              <TrendingUp className="w-4 h-4 text-green-500 mr-1" />
+              <span className="text-green-600">+{calculateGrowth(currentMonth.faturamentoOnline, previousMonth.faturamentoOnline)}%</span>
+              <span className="text-gray-500 ml-1">vs mês anterior</span>
+            </div>
+          </Card>
+
+          <Card className="p-6">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm font-medium text-gray-600">Seguidores Instagram</p>
+                <p className="text-2xl font-bold text-gray-900">{(currentMonth.seguidoresInstagram / 1000).toFixed(1)}k</p>
+              </div>
+              <div className="p-3 bg-purple-100 rounded-full">
+                <Users className="w-6 h-6 text-purple-600" />
+              </div>
+            </div>
+            <div className="flex items-center mt-4 text-sm">
+              <TrendingUp className="w-4 h-4 text-green-500 mr-1" />
+              <span className="text-green-600">+{calculateGrowth(currentMonth.seguidoresInstagram, previousMonth.seguidoresInstagram)}%</span>
+              <span className="text-gray-500 ml-1">vs mês anterior</span>
+            </div>
+          </Card>
+
+          <Card className="p-6">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm font-medium text-gray-600">Atendimento Geral</p>
+                <p className="text-2xl font-bold text-gray-900">{currentMonth.percentualAtendidasGeral}%</p>
+              </div>
+              <div className="p-3 bg-yellow-100 rounded-full">
+                <Phone className="w-6 h-6 text-yellow-600" />
+              </div>
+            </div>
+            <div className="flex items-center mt-4 text-sm">
+              <TrendingUp className="w-4 h-4 text-green-500 mr-1" />
+              <span className="text-green-600">+{calculateGrowth(currentMonth.percentualAtendidasGeral, previousMonth.percentualAtendidasGeral)}%</span>
+              <span className="text-gray-500 ml-1">vs mês anterior</span>
+            </div>
+          </Card>
+        </div>
+
+        {/* SEÇÃO: PUBLICAÇÕES */}
+        <div className="space-y-6">
+          <h2 className="text-2xl font-bold text-gray-900 flex items-center gap-2">
+            <Eye className="w-6 h-6 text-blue-600" />
+            Publicações
+          </h2>
+          
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
+            <Card className="p-4">
+              <div className="text-center">
+                <p className="text-sm text-gray-600">Facebook</p>
+                <p className="text-2xl font-bold text-blue-600">{currentMonth.publicacoesFacebook}</p>
+                <p className="text-xs text-gray-500">posts</p>
+              </div>
+            </Card>
+            <Card className="p-4">
+              <div className="text-center">
+                <p className="text-sm text-gray-600">Instagram</p>
+                <p className="text-2xl font-bold text-pink-600">{currentMonth.publicacoesInstagram}</p>
+                <p className="text-xs text-gray-500">posts</p>
+              </div>
+            </Card>
+            <Card className="p-4">
+              <div className="text-center">
+                <p className="text-sm text-gray-600">LinkedIn</p>
+                <p className="text-2xl font-bold text-blue-700">{currentMonth.publicacoesLinkedIn}</p>
+                <p className="text-xs text-gray-500">posts</p>
+              </div>
+            </Card>
+            <Card className="p-4">
+              <div className="text-center">
+                <p className="text-sm text-gray-600">TikTok</p>
+                <p className="text-2xl font-bold text-black">{currentMonth.publicacoesTikTok}</p>
+                <p className="text-xs text-gray-500">posts</p>
+              </div>
+            </Card>
+            <Card className="p-4">
+              <div className="text-center">
+                <p className="text-sm text-gray-600">YouTube Shorts</p>
+                <p className="text-2xl font-bold text-red-600">{currentMonth.publicacoesYoutubeShorts}</p>
+                <p className="text-xs text-gray-500">vídeos</p>
+              </div>
+            </Card>
+          </div>
+        </div>
+
+        {/* SEÇÃO: REDES SOCIAIS */}
+        <div className="space-y-6">
+          <h2 className="text-2xl font-bold text-gray-900 flex items-center gap-2">
+            <Users className="w-6 h-6 text-purple-600" />
+            Redes Sociais
+          </h2>
+          
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            <Card className="p-6">
+              <h3 className="text-lg font-semibold text-gray-900 mb-4">Crescimento de Seguidores</h3>
+              <ResponsiveContainer width="100%" height={300}>
+                <LineChart data={monthlyData}>
+                  <CartesianGrid strokeDasharray="3 3" />
+                  <XAxis dataKey="month" />
+                  <YAxis />
+                  <Tooltip formatter={(value: number | string) => [value.toLocaleString(), '']} />
+                  <Line type="monotone" dataKey="seguidoresInstagram" stroke="#E1306C" strokeWidth={3} name="Instagram" />
+                  <Line type="monotone" dataKey="seguidoresFacebook" stroke="#1877F2" strokeWidth={3} name="Facebook" />
+                  <Line type="monotone" dataKey="seguidoresLinkedIn" stroke="#0A66C2" strokeWidth={3} name="LinkedIn" />
+                  <Line type="monotone" dataKey="seguidoresTikTok" stroke="#000000" strokeWidth={3} name="TikTok" />
+                  <Line type="monotone" dataKey="inscritosYoutube" stroke="#FF0000" strokeWidth={3} name="YouTube" />
+                </LineChart>
+              </ResponsiveContainer>
+            </Card>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <Card className="p-4">
+                <div className="text-center">
+                  <p className="text-sm text-gray-600">Alcance Médio Post Feed</p>
+                  <p className="text-2xl font-bold text-green-600">{currentMonth.alcanceMedioPostFeed}%</p>
+                  <p className="text-xs text-green-500">Bom: 20-30%</p>
+                </div>
+              </Card>
+              <Card className="p-4">
+                <div className="text-center">
+                  <p className="text-sm text-gray-600">Engajamento Instagram</p>
+                  <p className="text-2xl font-bold text-purple-600">{currentMonth.engajamentoInstagram}%</p>
+                  <p className="text-xs text-gray-500">média</p>
+                </div>
+              </Card>
+              <Card className="p-4">
+                <div className="text-center">
+                  <p className="text-sm text-gray-600">Alcance Médio Storys</p>
+                  <p className="text-2xl font-bold text-orange-600">{currentMonth.alcanceMedioStorys}%</p>
+                  <p className="text-xs text-orange-500">Bom: 8%</p>
+                </div>
+              </Card>
+              <Card className="p-4">
+                <div className="text-center">
+                  <p className="text-sm text-gray-600">Pessoas Seguindo</p>
+                  <p className="text-2xl font-bold text-blue-600">{currentMonth.pessoasSeguindo}</p>
+                  <p className="text-xs text-gray-500">total</p>
+                </div>
+              </Card>
+            </div>
+          </div>
+        </div>
+
+        {/* SEÇÃO: VISUALIZAÇÕES / ALCANCE / ENGAJAMENTO */}
+        <div className="space-y-6">
+          <h2 className="text-2xl font-bold text-gray-900 flex items-center gap-2">
+            <Play className="w-6 h-6 text-red-600" />
+            Visualizações / Alcance / Engajamento
+          </h2>
+          
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+            <Card className="p-4">
+              <div className="text-center">
+                <p className="text-sm text-gray-600">Alcance Facebook</p>
+                <p className="text-2xl font-bold text-blue-600">{(currentMonth.alcanceVisualizacoesFacebook / 1000).toFixed(0)}k</p>
+                <p className="text-xs text-gray-500">visualizações</p>
+              </div>
+            </Card>
+            <Card className="p-4">
+              <div className="text-center">
+                <p className="text-sm text-gray-600">Alcance YouTube</p>
+                <p className="text-2xl font-bold text-red-600">{(currentMonth.alcanceVisualizacoesYoutube / 1000).toFixed(0)}k</p>
+                <p className="text-xs text-gray-500">visualizações</p>
+              </div>
+            </Card>
+            <Card className="p-4">
+              <div className="text-center">
+                <p className="text-sm text-gray-600">Tempo Exibição YouTube</p>
+                <p className="text-2xl font-bold text-orange-600">{currentMonth.tempoExibicaoYoutube}h</p>
+                <p className="text-xs text-gray-500">horas</p>
+              </div>
+            </Card>
+            <Card className="p-4">
+              <div className="text-center">
+                <p className="text-sm text-gray-600">Duração Média</p>
+                <p className="text-2xl font-bold text-purple-600">{currentMonth.duracaoMediaVisualizacao}min</p>
+                <p className="text-xs text-gray-500">por vídeo</p>
+              </div>
+            </Card>
+          </div>
+        </div>
+
+        {/* SEÇÃO: LEADS */}
+        <div className="space-y-6">
+          <h2 className="text-2xl font-bold text-gray-900 flex items-center gap-2">
+            <Target className="w-6 h-6 text-green-600" />
+            Número de Leads
+          </h2>
+          
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            <Card className="p-6">
+              <h3 className="text-lg font-semibold text-gray-900 mb-4">Distribuição de Leads por Canal</h3>
+              <ResponsiveContainer width="100%" height={300}>
+                <AreaChart data={monthlyData}>
+                  <CartesianGrid strokeDasharray="3 3" />
+                  <XAxis dataKey="month" />
+                  <YAxis />
+                  <Tooltip />
+                  <Area type="monotone" dataKey="leadsWhatsappRecife" stackId="1" stroke="#25D366" fill="#25D366" name="WhatsApp" />
+                  <Area type="monotone" dataKey="leadsSiteReativos" stackId="1" stroke="#3B82F6" fill="#3B82F6" name="Site" />
+                  <Area type="monotone" dataKey="leadsFacebookReativos" stackId="1" stroke="#1877F2" fill="#1877F2" name="Facebook" />
+                  <Area type="monotone" dataKey="leadsInstagramReativos" stackId="1" stroke="#E1306C" fill="#E1306C" name="Instagram" />
+                </AreaChart>
+              </ResponsiveContainer>
+            </Card>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <Card className="p-4">
+                <div className="text-center">
+                  <p className="text-sm text-gray-600">Facebook Reativos</p>
+                  <p className="text-2xl font-bold text-blue-600">{currentMonth.leadsFacebookReativos}</p>
+                  <p className="text-xs text-gray-500">leads</p>
+                </div>
+              </Card>
+              <Card className="p-4">
+                <div className="text-center">
+                  <p className="text-sm text-gray-600">Instagram Reativos</p>
+                  <p className="text-2xl font-bold text-pink-600">{currentMonth.leadsInstagramReativos}</p>
+                  <p className="text-xs text-gray-500">leads</p>
+                </div>
+              </Card>
+              <Card className="p-4">
+                <div className="text-center">
+                  <p className="text-sm text-gray-600">Site Reativos</p>
+                  <p className="text-2xl font-bold text-green-600">{currentMonth.leadsSiteReativos}</p>
+                  <p className="text-xs text-gray-500">leads</p>
+                </div>
+              </Card>
+              <Card className="p-4">
+                <div className="text-center">
+                  <p className="text-sm text-gray-600">WhatsApp Recife</p>
+                  <p className="text-2xl font-bold text-green-500">{currentMonth.leadsWhatsappRecife}</p>
+                  <p className="text-xs text-gray-500">leads</p>
+                </div>
+              </Card>
+            </div>
+          </div>
+        </div>
+
+        {/* SEÇÃO: FATURAMENTO */}
+        <div className="space-y-6">
+          <h2 className="text-2xl font-bold text-gray-900 flex items-center gap-2">
+            <DollarSign className="w-6 h-6 text-green-600" />
+            Faturamento Atendimento Online
+          </h2>
+          
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            <Card className="p-6">
+              <h3 className="text-lg font-semibold text-gray-900 mb-4">Performance de Vendas</h3>
+              <ResponsiveContainer width="100%" height={300}>
+                <BarChart data={monthlyData}>
+                  <CartesianGrid strokeDasharray="3 3" />
+                  <XAxis dataKey="month" />
+                  <YAxis />
+                  <Tooltip formatter={(value: number | string, name: string) => {
+                    if (name === 'faturamentoOnline') return [`R$ ${value.toLocaleString()}`, 'Faturamento'];
+                    if (name === 'ticketMedio') return [`R$ ${value}`, 'Ticket Médio'];
+                    return [value, 'Vendas'];
+                  }} />
+                  <Bar dataKey="faturamentoOnline" fill="#10B981" name="faturamentoOnline" />
+                  <Bar dataKey="vendasRealizadas" fill="#3B82F6" name="vendasRealizadas" />
+                </BarChart>
+              </ResponsiveContainer>
+            </Card>
+
+            <div className="grid grid-cols-1 gap-4">
+              <Card className="p-6">
+                <div className="text-center">
+                  <p className="text-sm text-gray-600">Valor de Vendas Online + E-commerce</p>
+                  <p className="text-3xl font-bold text-green-600">R$ {currentMonth.faturamentoOnline.toLocaleString()}</p>
+                  <p className="text-xs text-gray-500">faturamento total</p>
+                </div>
+              </Card>
+              <Card className="p-6">
+                <div className="text-center">
+                  <p className="text-sm text-gray-600">Quantidade de Vendas Realizadas</p>
+                  <p className="text-3xl font-bold text-blue-600">{currentMonth.vendasRealizadas}</p>
+                  <p className="text-xs text-gray-500">vendas</p>
+                </div>
+              </Card>
+              <Card className="p-6">
+                <div className="text-center">
+                  <p className="text-sm text-gray-600">Ticket Médio</p>
+                  <p className="text-3xl font-bold text-purple-600">R$ {currentMonth.ticketMedio}</p>
+                  <p className="text-xs text-gray-500">por venda</p>
+                </div>
+              </Card>
+            </div>
+          </div>
+        </div>
+
+        {/* SEÇÃO: SITE */}
+        <div className="space-y-6">
+          <h2 className="text-2xl font-bold text-gray-900 flex items-center gap-2">
+            <Globe className="w-6 h-6 text-blue-600" />
+            Site
+          </h2>
+          
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+            <Card className="p-4">
+              <div className="text-center">
+                <p className="text-sm text-gray-600">Visitas no Site</p>
+                <p className="text-2xl font-bold text-blue-600">{currentMonth.visitasSite.toLocaleString()}</p>
+                <p className="text-xs text-gray-500">visitas</p>
+              </div>
+            </Card>
+            <Card className="p-4">
+              <div className="text-center">
+                <p className="text-sm text-gray-600">Usuários</p>
+                <p className="text-2xl font-bold text-green-600">{currentMonth.usuariosSite.toLocaleString()}</p>
+                <p className="text-xs text-gray-500">usuários</p>
+              </div>
+            </Card>
+            <Card className="p-4">
+              <div className="text-center">
+                <p className="text-sm text-gray-600">Novos Usuários</p>
+                <p className="text-2xl font-bold text-purple-600">{currentMonth.novosUsuarios.toLocaleString()}</p>
+                <p className="text-xs text-gray-500">novos</p>
+              </div>
+            </Card>
+            <Card className="p-4">
+              <div className="text-center">
+                <p className="text-sm text-gray-600">Taxa de Rejeição</p>
+                <p className="text-2xl font-bold text-red-600">{currentMonth.taxaRejeicao}%</p>
+                <p className="text-xs text-gray-500">rejeição</p>
+              </div>
+            </Card>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+            <Card className="p-4">
+              <div className="text-center">
+                <p className="text-sm text-gray-600">Tempo Médio Engajamento</p>
+                <p className="text-2xl font-bold text-orange-600">{currentMonth.tempoMedioEngajamento}min</p>
+                <p className="text-xs text-gray-500">minutos</p>
+              </div>
+            </Card>
+            <Card className="p-4">
+              <div className="text-center">
+                <p className="text-sm text-gray-600">Páginas Visitadas</p>
+                <p className="text-2xl font-bold text-blue-600">{currentMonth.paginasVisitadas.toLocaleString()}</p>
+                <p className="text-xs text-gray-500">páginas</p>
+              </div>
+            </Card>
+            <Card className="p-4">
+              <div className="text-center">
+                <p className="text-sm text-gray-600">Número de Eventos</p>
+                <p className="text-2xl font-bold text-green-600">{currentMonth.numeroEventos.toLocaleString()}</p>
+                <p className="text-xs text-gray-500">eventos</p>
+              </div>
+            </Card>
+            <Card className="p-4">
+              <div className="text-center">
+                <p className="text-sm text-gray-600">Número de Sessões</p>
+                <p className="text-2xl font-bold text-purple-600">{currentMonth.numeroSessoes.toLocaleString()}</p>
+                <p className="text-xs text-gray-500">sessões</p>
+              </div>
+            </Card>
+          </div>
+        </div>
+
+        {/* SEÇÃO: GOOGLE MEU NEGÓCIO */}
+        <div className="space-y-6">
+          <h2 className="text-2xl font-bold text-gray-900 flex items-center gap-2">
+            <MapPin className="w-6 h-6 text-red-600" />
+            Google Meu Negócio
+          </h2>
+          
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            {/* GMN Recife */}
+            <Card className="p-6">
+              <h3 className="text-lg font-semibold text-gray-900 mb-4">GMN Recife</h3>
+              <div className="grid grid-cols-2 gap-4">
+                <div className="text-center">
+                  <p className="text-sm text-gray-600">Valor Investido</p>
+                  <p className="text-xl font-bold text-green-600">R$ {currentMonth.valorInvestidoGoogleRecife.toLocaleString()}</p>
+                </div>
+                <div className="text-center">
+                  <p className="text-sm text-gray-600">Ligações Google</p>
+                  <p className="text-xl font-bold text-blue-600">{currentMonth.ligacoesGoogleRecife}</p>
+                </div>
+                <div className="text-center">
+                  <p className="text-sm text-gray-600">CPL</p>
+                  <p className="text-xl font-bold text-purple-600">R$ {currentMonth.cplRecife}</p>
+                </div>
+                <div className="text-center">
+                  <p className="text-sm text-gray-600">Pessoas Alcançadas</p>
+                  <p className="text-xl font-bold text-orange-600">{currentMonth.pessoasAlcancadasRecife.toLocaleString()}</p>
+                </div>
+              </div>
+            </Card>
+
+            {/* GMN Cabo */}
+            <Card className="p-6">
+              <h3 className="text-lg font-semibold text-gray-900 mb-4">GMN Cabo</h3>
+              <div className="grid grid-cols-2 gap-4">
+                <div className="text-center">
+                  <p className="text-sm text-gray-600">Valor Investido</p>
+                  <p className="text-xl font-bold text-green-600">R$ {currentMonth.valorInvestidoGoogleCabo.toLocaleString()}</p>
+                </div>
+                <div className="text-center">
+                  <p className="text-sm text-gray-600">Ligações Google</p>
+                  <p className="text-xl font-bold text-blue-600">{currentMonth.ligacoesGoogleCabo}</p>
+                </div>
+                <div className="text-center">
+                  <p className="text-sm text-gray-600">CPL</p>
+                  <p className="text-xl font-bold text-purple-600">R$ {currentMonth.cplCabo.toFixed(2)}</p>
+                </div>
+                <div className="text-center">
+                  <p className="text-sm text-gray-600">Pessoas Alcançadas</p>
+                  <p className="text-xl font-bold text-orange-600">{currentMonth.pessoasAlcancadasCabo.toLocaleString()}</p>
+                </div>
+              </div>
+            </Card>
+          </div>
+        </div>
+
+        {/* SEÇÃO: EMAIL MARKETING */}
+        <div className="space-y-6">
+          <h2 className="text-2xl font-bold text-gray-900 flex items-center gap-2">
+            <Mail className="w-6 h-6 text-blue-600" />
+            Email Marketing
+          </h2>
+          
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+            <Card className="p-4">
+              <div className="text-center">
+                <p className="text-sm text-gray-600">Emails Válidos na Base</p>
+                <p className="text-2xl font-bold text-blue-600">{currentMonth.emailsValidosBase.toLocaleString()}</p>
+                <p className="text-xs text-gray-500">emails</p>
+              </div>
+            </Card>
+            <Card className="p-4">
+              <div className="text-center">
+                <p className="text-sm text-gray-600">Emails Enviados</p>
+                <p className="text-2xl font-bold text-green-600">{currentMonth.emailsEnviados.toLocaleString()}</p>
+                <p className="text-xs text-gray-500">enviados</p>
+              </div>
+            </Card>
+            <Card className="p-4">
+              <div className="text-center">
+                <p className="text-sm text-gray-600">Emails Abertos</p>
+                <p className="text-2xl font-bold text-purple-600">{currentMonth.emailsAbertos.toLocaleString()}</p>
+                <p className="text-xs text-gray-500">abertos</p>
+              </div>
+            </Card>
+            <Card className="p-4">
+              <div className="text-center">
+                <p className="text-sm text-gray-600">Taxa de Abertura</p>
+                <p className="text-2xl font-bold text-orange-600">{((currentMonth.emailsAbertos / currentMonth.emailsEnviados) * 100).toFixed(1)}%</p>
+                <p className="text-xs text-gray-500">abertura</p>
+              </div>
+            </Card>
+          </div>
+        </div>
+
+        {/* SEÇÃO: TELEFONEMAS */}
+        <div className="space-y-6">
+          <h2 className="text-2xl font-bold text-gray-900 flex items-center gap-2">
+            <Phone className="w-6 h-6 text-green-600" />
+            Telefonemas
+          </h2>
+          
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            {/* Recife */}
+            <Card className="p-6">
+              <h3 className="text-lg font-semibold text-gray-900 mb-4">Recife</h3>
+              <div className="space-y-3">
+                <div className="flex justify-between">
+                  <span className="text-sm text-gray-600">Recebidas:</span>
+                  <span className="text-sm font-medium">{currentMonth.ligacoesRecebidasRecife}</span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-sm text-gray-600">Atendidas:</span>
+                  <span className="text-sm font-medium">{currentMonth.ligacoesAtendidasRecife}</span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-sm text-gray-600">% Atendidas:</span>
+                  <span className="text-sm font-medium text-green-600">{currentMonth.percentualAtendidasRecife}%</span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-sm text-gray-600">Tempo Médio:</span>
+                  <span className="text-sm font-medium">{currentMonth.tempoMedioAtendimentoRecife}s</span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-sm text-gray-600">% Google:</span>
+                  <span className="text-sm font-medium text-blue-600">{currentMonth.percentualGoogleRecife}%</span>
+                </div>
+              </div>
+            </Card>
+
+            {/* Cabo */}
+            <Card className="p-6">
+              <h3 className="text-lg font-semibold text-gray-900 mb-4">Cabo</h3>
+              <div className="space-y-3">
+                <div className="flex justify-between">
+                  <span className="text-sm text-gray-600">Recebidas:</span>
+                  <span className="text-sm font-medium">{currentMonth.ligacoesRecebidasCabo}</span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-sm text-gray-600">Atendidas:</span>
+                  <span className="text-sm font-medium">{currentMonth.ligacoesAtendidasCabo}</span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-sm text-gray-600">% Atendidas:</span>
+                  <span className="text-sm font-medium text-green-600">{currentMonth.percentualAtendidasCabo}%</span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-sm text-gray-600">Tempo Médio:</span>
+                  <span className="text-sm font-medium">{currentMonth.tempoMedioAtendimentoCabo}s</span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-sm text-gray-600">% Google:</span>
+                  <span className="text-sm font-medium text-blue-600">{currentMonth.percentualGoogleCabo}%</span>
+                </div>
+              </div>
+            </Card>
+
+            {/* Geral */}
+            <Card className="p-6">
+              <h3 className="text-lg font-semibold text-gray-900 mb-4">Geral</h3>
+              <div className="space-y-3">
+                <div className="flex justify-between">
+                  <span className="text-sm text-gray-600">Recebidas:</span>
+                  <span className="text-sm font-medium">{currentMonth.ligacoesRecebidasGeral}</span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-sm text-gray-600">Atendidas:</span>
+                  <span className="text-sm font-medium">{currentMonth.ligacoesAtendidasGeral}</span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-sm text-gray-600">% Atendidas:</span>
+                  <span className="text-sm font-medium text-green-600">{currentMonth.percentualAtendidasGeral}%</span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-sm text-gray-600">Tempo Médio:</span>
+                  <span className="text-sm font-medium">{currentMonth.tempoMedioAtendimentoGeral}s</span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-sm text-gray-600">% Google:</span>
+                  <span className="text-sm font-medium text-blue-600">{currentMonth.percentualGoogleGeral}%</span>
+                </div>
+              </div>
+            </Card>
+          </div>
+        </div>
+      </div>
+    </Layout>
+  );
+}
