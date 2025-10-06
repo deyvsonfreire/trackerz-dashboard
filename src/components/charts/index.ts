@@ -41,6 +41,17 @@ export type { default as BoxPlotProps } from './BoxPlot';
 export { MapChart, InteractiveMapChart } from './MapChart';
 export type { MapChartProps, MapDataPoint } from './MapChart';
 
+// Heatmap demográfico para análise de audiência
+export { DemographicHeatmap } from './DemographicHeatmap';
+
+// Distribuição geográfica para análise regional
+export { GeographicDistribution } from './GeographicDistribution';
+export { CustomerJourney } from './CustomerJourney';
+export { EngagementHeatmap } from './EngagementHeatmap';
+export { CustomSegments } from './CustomSegments';
+export { DevicePerformance } from './DevicePerformance';
+export { CohortAnalysis } from './CohortAnalysis';
+
 /**
  * Casos de uso recomendados:
  * 

@@ -41,6 +41,8 @@ import {
   ScatterChart,
   Scatter
 } from 'recharts';
+import { Layout } from '@/components/layout/Layout';
+import { useHydrated } from '@/hooks/useHydrated';
 
 /**
  * Interface para dados de SEO
@@ -124,6 +126,8 @@ interface SEOIssue {
  * - Tendências e insights
  */
 export default function SEOOrganicPage() {
+  const hydrated = useHydrated();
+  const [activeTab, setActiveTab] = useState('overview');
   const [selectedPeriod, setSelectedPeriod] = useState('30d');
   const [selectedMetric, setSelectedMetric] = useState('organicTraffic');
 
@@ -280,37 +284,18 @@ export default function SEOOrganicPage() {
     }
   };
 
-  return (
-    <div className="container mx-auto p-6 space-y-6">
-      {/* Header */}
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-3xl font-bold flex items-center gap-2">
-            🔍 SEO & Tráfego Orgânico
-          </h1>
-          <p className="text-muted-foreground">
-            Análise completa de performance orgânica e otimização para mecanismos de busca
-          </p>
+  if (!hydrated) {
+    return (
+      <Layout title="SEO Orgânico" subtitle="Análise de tráfego, palavras-chave e saúde técnica">
+        <div className="flex items-center justify-center h-64">
+          <div className="text-gray-500">Carregando...</div>
         </div>
-        <div className="flex gap-2">
-          <Select value={selectedPeriod} onValueChange={setSelectedPeriod}>
-            <SelectTrigger className="w-32">
-              <SelectValue />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="7d">7 dias</SelectItem>
-              <SelectItem value="30d">30 dias</SelectItem>
-              <SelectItem value="90d">90 dias</SelectItem>
-              <SelectItem value="1y">1 ano</SelectItem>
-            </SelectContent>
-          </Select>
-          <Button variant="outline">
-            <Download className="h-4 w-4 mr-2" />
-            Exportar
-          </Button>
-        </div>
-      </div>
+      </Layout>
+    );
+  }
 
+  return (
+    <Layout title="SEO Orgânico" subtitle="Análise de tráfego, palavras-chave e saúde técnica">
       {/* KPIs Principais */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
         <Card>
@@ -370,14 +355,33 @@ export default function SEOOrganicPage() {
         </Card>
       </div>
 
-      <Tabs defaultValue="overview" className="space-y-4">
-        <TabsList>
-          <TabsTrigger value="overview">Visão Geral</TabsTrigger>
-          <TabsTrigger value="keywords">Palavras-chave</TabsTrigger>
-          <TabsTrigger value="pages">Páginas</TabsTrigger>
-          <TabsTrigger value="backlinks">Backlinks</TabsTrigger>
-          <TabsTrigger value="technical">Técnico</TabsTrigger>
-        </TabsList>
+      <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-4">
+        <div className="flex justify-between items-center">
+          <TabsList>
+            <TabsTrigger value="overview">Visão Geral</TabsTrigger>
+            <TabsTrigger value="keywords">Palavras-chave</TabsTrigger>
+            <TabsTrigger value="pages">Páginas</TabsTrigger>
+            <TabsTrigger value="backlinks">Backlinks</TabsTrigger>
+            <TabsTrigger value="technical">Técnico</TabsTrigger>
+          </TabsList>
+          <div className="flex gap-2">
+            <Select value={selectedPeriod} onValueChange={setSelectedPeriod}>
+              <SelectTrigger className="w-32">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="7d">7 dias</SelectItem>
+                <SelectItem value="30d">30 dias</SelectItem>
+                <SelectItem value="90d">90 dias</SelectItem>
+                <SelectItem value="1y">1 ano</SelectItem>
+              </SelectContent>
+            </Select>
+            <Button variant="outline">
+              <Download className="h-4 w-4 mr-2" />
+              Exportar
+            </Button>
+          </div>
+        </div>
 
         <TabsContent value="overview" className="space-y-4">
           {/* Gráfico Principal */}
@@ -757,6 +761,6 @@ export default function SEOOrganicPage() {
           </Card>
         </TabsContent>
       </Tabs>
-    </div>
+    </Layout>
   );
 }

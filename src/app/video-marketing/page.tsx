@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useMemo, useState } from 'react';
+import { Layout } from '@/components/layout/Layout';
 import { Card, CardHeader, CardTitle, CardDescription, CardContent, Tabs, TabsList, TabsTrigger, TabsContent, Select, SelectTrigger, SelectContent, SelectItem, SelectValue, Button, Badge } from '@/components/ui';
 import { PlayCircle, Video, Gauge, Clock, BarChart3, ThumbsUp, MessageSquare, Share, Eye, Calendar, Filter } from 'lucide-react';
 import {
@@ -75,188 +76,181 @@ export default function VideoMarketingPage() {
   const platforms = ['YouTube', 'Instagram', 'TikTok', 'Facebook'];
 
   return (
-    <div className="p-6 space-y-6">
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-2xl font-semibold flex items-center gap-2"><Video className="h-6 w-6" /> Video Marketing</h1>
-          <p className="text-sm text-gray-600">Análise de vídeos, retenção, CTR e engajamento por plataforma.</p>
-        </div>
-        <div className="flex items-center gap-3">
-          <Badge variant="secondary" className="flex items-center gap-1"><Calendar className="h-4 w-4" /> Últimos {period}</Badge>
-          <Button variant="outline" className="flex items-center gap-1"><Filter className="h-4 w-4" /> Filtros</Button>
-        </div>
-      </div>
+    <Layout title="Video Marketing" subtitle="Análise de vídeos, retenção, CTR e engajamento por plataforma.">
+      <div className="space-y-6">
 
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2"><BarChart3 className="h-5 w-5" /> Visão Geral</CardTitle>
-          <CardDescription>Performance agregada por plataforma e período.</CardDescription>
-        </CardHeader>
-        <CardContent>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            <div className="rounded-md border p-4">
-              <div className="text-sm text-gray-500">Visualizações</div>
-              <div className="text-2xl font-semibold flex items-center gap-2"><Eye className="h-5 w-5" /> 73.200</div>
-            </div>
-            <div className="rounded-md border p-4">
-              <div className="text-sm text-gray-500">Tempo de exibição</div>
-              <div className="text-2xl font-semibold flex items-center gap-2"><Clock className="h-5 w-5" /> 19.600 min</div>
-            </div>
-            <div className="rounded-md border p-4">
-              <div className="text-sm text-gray-500">CTR médio</div>
-              <div className="text-2xl font-semibold flex items-center gap-2"><Gauge className="h-5 w-5" /> 3,4%</div>
-            </div>
-          </div>
 
-          <div className="mt-6 grid grid-cols-1 lg:grid-cols-2 gap-6">
-            <Card className="border-0 shadow-none">
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2"><PlayCircle className="h-5 w-5" /> Evolução de visualizações</CardTitle>
-                <CardDescription>Variação diária de visualizações e CTR.</CardDescription>
-              </CardHeader>
-              <CardContent>
-                <div className="h-64">
-                  <ResponsiveContainer width="100%" height="100%">
-                    <LineChart data={series}>
-                      <CartesianGrid strokeDasharray="3 3" />
-                      <XAxis dataKey="date" />
-                      <YAxis />
-                      <Tooltip />
-                      <Legend />
-                      <Line type="monotone" dataKey="views" stroke={COLORS[0]} name="Views" strokeWidth={2} />
-                      <Line type="monotone" dataKey="ctr" stroke={COLORS[2]} name="CTR (%)" strokeWidth={2} />
-                    </LineChart>
-                  </ResponsiveContainer>
-                </div>
-              </CardContent>
-            </Card>
-
-            <Card className="border-0 shadow-none">
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2"><Clock className="h-5 w-5" /> Retenção e duração média</CardTitle>
-                <CardDescription>Retenção (%) e duração média das views.</CardDescription>
-              </CardHeader>
-              <CardContent>
-                <div className="h-64">
-                  <ResponsiveContainer width="100%" height="100%">
-                    <BarChart data={series}>
-                      <CartesianGrid strokeDasharray="3 3" />
-                      <XAxis dataKey="date" />
-                      <YAxis />
-                      <Tooltip />
-                      <Legend />
-                      <Bar dataKey="retention" fill={COLORS[1]} name="Retenção (%)" />
-                      <Bar dataKey="avgViewDuration" fill={COLORS[4]} name="Duração média (s)" />
-                    </BarChart>
-                  </ResponsiveContainer>
-                </div>
-              </CardContent>
-            </Card>
-          </div>
-        </CardContent>
-      </Card>
-
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2"><Video className="h-5 w-5" /> Performance por plataforma</CardTitle>
-          <CardDescription>Compare métricas chave entre YouTube, Instagram, TikTok e Facebook.</CardDescription>
-        </CardHeader>
-        <CardContent>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            {platforms.map((p, i) => (
-              <div key={p} className="rounded-md border p-4">
-                <div className="text-sm text-gray-500">{p}</div>
-                <div className="mt-2 flex items-center gap-4">
-                  <Badge variant="secondary" className="flex items-center gap-1"><Eye className="h-4 w-4" /> {Math.round(18000 + i * 2500)}</Badge>
-                  <Badge variant="secondary" className="flex items-center gap-1"><ThumbsUp className="h-4 w-4" /> {Math.round(750 + i * 140)}</Badge>
-                  <Badge variant="secondary" className="flex items-center gap-1"><MessageSquare className="h-4 w-4" /> {Math.round(120 + i * 40)}</Badge>
-                </div>
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2"><BarChart3 className="h-5 w-5" /> Visão Geral</CardTitle>
+            <CardDescription>Performance agregada por plataforma e período.</CardDescription>
+          </CardHeader>
+          <CardContent>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              <div className="rounded-md border p-4">
+                <div className="text-sm text-gray-500">Visualizações</div>
+                <div className="text-2xl font-semibold flex items-center gap-2"><Eye className="h-5 w-5" /> 73.200</div>
               </div>
-            ))}
-          </div>
-        </CardContent>
-      </Card>
+              <div className="rounded-md border p-4">
+                <div className="text-sm text-gray-500">Tempo de exibição</div>
+                <div className="text-2xl font-semibold flex items-center gap-2"><Clock className="h-5 w-5" /> 19.600 min</div>
+              </div>
+              <div className="rounded-md border p-4">
+                <div className="text-sm text-gray-500">CTR médio</div>
+                <div className="text-2xl font-semibold flex items-center gap-2"><Gauge className="h-5 w-5" /> 3,4%</div>
+              </div>
+            </div>
 
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2"><BarChart3 className="h-5 w-5" /> Top vídeos</CardTitle>
-          <CardDescription>Ranking por visualizações e engajamento.</CardDescription>
-        </CardHeader>
-        <CardContent>
-          <div className="overflow-x-auto">
-            <table className="min-w-full text-sm">
-              <thead>
-                <tr className="text-left text-gray-500 border-b">
-                  <th className="py-2">Título</th>
-                  <th className="py-2">Plataforma</th>
-                  <th className="py-2">Views</th>
-                  <th className="py-2">Watch time (min)</th>
-                  <th className="py-2">CTR</th>
-                  <th className="py-2">Retenção</th>
-                  <th className="py-2">Likes</th>
-                  <th className="py-2">Comentários</th>
-                  <th className="py-2">Compart.</th>
-                </tr>
-              </thead>
-              <tbody>
-                {videos.map((v) => (
-                  <tr key={v.id} className="border-b">
-                    <td className="py-2">{v.title}</td>
-                    <td className="py-2">{v.platform}</td>
-                    <td className="py-2">{v.views.toLocaleString()}</td>
-                    <td className="py-2">{v.watchTime.toLocaleString()}</td>
-                    <td className="py-2">{v.ctr}%</td>
-                    <td className="py-2">{v.retention}%</td>
-                    <td className="py-2">{v.likes}</td>
-                    <td className="py-2">{v.comments}</td>
-                    <td className="py-2">{v.shares}</td>
+            <div className="mt-6 grid grid-cols-1 lg:grid-cols-2 gap-6">
+              <Card className="border-0 shadow-none">
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2"><PlayCircle className="h-5 w-5" /> Evolução de visualizações</CardTitle>
+                  <CardDescription>Variação diária de visualizações e CTR.</CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <div className="h-64">
+                    <ResponsiveContainer width="100%" height="100%">
+                      <LineChart data={series}>
+                        <CartesianGrid strokeDasharray="3 3" />
+                        <XAxis dataKey="date" />
+                        <YAxis />
+                        <Tooltip />
+                        <Legend />
+                        <Line type="monotone" dataKey="views" stroke={COLORS[0]} name="Views" strokeWidth={2} />
+                        <Line type="monotone" dataKey="ctr" stroke={COLORS[2]} name="CTR (%)" strokeWidth={2} />
+                      </LineChart>
+                    </ResponsiveContainer>
+                  </div>
+                </CardContent>
+              </Card>
+
+              <Card className="border-0 shadow-none">
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2"><Clock className="h-5 w-5" /> Retenção e duração média</CardTitle>
+                  <CardDescription>Retenção (%) e duração média das views.</CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <div className="h-64">
+                    <ResponsiveContainer width="100%" height="100%">
+                      <BarChart data={series}>
+                        <CartesianGrid strokeDasharray="3 3" />
+                        <XAxis dataKey="date" />
+                        <YAxis />
+                        <Tooltip />
+                        <Legend />
+                        <Bar dataKey="retention" fill={COLORS[1]} name="Retenção (%)" />
+                        <Bar dataKey="avgViewDuration" fill={COLORS[4]} name="Duração média (s)" />
+                      </BarChart>
+                    </ResponsiveContainer>
+                  </div>
+                </CardContent>
+              </Card>
+            </div>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2"><Video className="h-5 w-5" /> Performance por plataforma</CardTitle>
+            <CardDescription>Compare métricas chave entre YouTube, Instagram, TikTok e Facebook.</CardDescription>
+          </CardHeader>
+          <CardContent>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              {platforms.map((p, i) => (
+                <div key={p} className="rounded-md border p-4">
+                  <div className="text-sm text-gray-500">{p}</div>
+                  <div className="mt-2 flex items-center gap-4">
+                    <Badge variant="secondary" className="flex items-center gap-1"><Eye className="h-4 w-4" /> {Math.round(18000 + i * 2500)}</Badge>
+                    <Badge variant="secondary" className="flex items-center gap-1"><ThumbsUp className="h-4 w-4" /> {Math.round(750 + i * 140)}</Badge>
+                    <Badge variant="secondary" className="flex items-center gap-1"><MessageSquare className="h-4 w-4" /> {Math.round(120 + i * 40)}</Badge>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2"><BarChart3 className="h-5 w-5" /> Top vídeos</CardTitle>
+            <CardDescription>Ranking por visualizações e engajamento.</CardDescription>
+          </CardHeader>
+          <CardContent>
+            <div className="overflow-x-auto">
+              <table className="min-w-full text-sm">
+                <thead>
+                  <tr className="text-left text-gray-800 font-medium border-b">
+                    <th className="py-3 px-2">Título</th>
+                    <th className="py-3 px-2">Plataforma</th>
+                    <th className="py-3 px-2">Views</th>
+                    <th className="py-3 px-2">Watch time (min)</th>
+                    <th className="py-3 px-2">CTR</th>
+                    <th className="py-3 px-2">Retenção</th>
+                    <th className="py-3 px-2">Likes</th>
+                    <th className="py-3 px-2">Comentários</th>
+                    <th className="py-3 px-2">Compart.</th>
                   </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        </CardContent>
-      </Card>
-
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2"><Filter className="h-5 w-5" /> Filtros e seleção</CardTitle>
-          <CardDescription>Selecione plataforma e período para refinar os gráficos.</CardDescription>
-        </CardHeader>
-        <CardContent>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            <div>
-              <div className="text-xs text-gray-500 mb-1">Plataforma</div>
-              <Select value={platform} onValueChange={setPlatform}>
-                <SelectTrigger>
-                  <SelectValue placeholder="Escolha plataforma" />
-                </SelectTrigger>
-                <SelectContent>
-                  {platforms.map((p) => (
-                    <SelectItem key={p} value={p}>{p}</SelectItem>
+                </thead>
+                <tbody>
+                  {videos.map((v) => (
+                    <tr key={v.id} className="border-b hover:bg-gray-50">
+                      <td className="py-3 px-2 text-gray-700">{v.title}</td>
+                      <td className="py-3 px-2 text-gray-700">{v.platform}</td>
+                      <td className="py-3 px-2 text-gray-700">{v.views.toLocaleString()}</td>
+                      <td className="py-3 px-2 text-gray-700">{v.watchTime.toLocaleString()}</td>
+                      <td className="py-3 px-2 text-gray-700">{v.ctr}%</td>
+                      <td className="py-3 px-2 text-gray-700">{v.retention}%</td>
+                      <td className="py-3 px-2 text-gray-700">{v.likes}</td>
+                      <td className="py-3 px-2 text-gray-700">{v.comments}</td>
+                      <td className="py-3 px-2 text-gray-700">{v.shares}</td>
+                    </tr>
                   ))}
-                </SelectContent>
-              </Select>
+                </tbody>
+              </table>
             </div>
-            <div>
-              <div className="text-xs text-gray-500 mb-1">Período</div>
-              <Tabs value={period} onValueChange={setPeriod}>
-                <TabsList>
-                  <TabsTrigger value="7d">7 dias</TabsTrigger>
-                  <TabsTrigger value="30d">30 dias</TabsTrigger>
-                  <TabsTrigger value="90d">90 dias</TabsTrigger>
-                </TabsList>
-                <TabsContent value="7d" />
-                <TabsContent value="30d" />
-                <TabsContent value="90d" />
-              </Tabs>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2"><Filter className="h-5 w-5" /> Filtros e seleção</CardTitle>
+            <CardDescription>Selecione plataforma e período para refinar os gráficos.</CardDescription>
+          </CardHeader>
+          <CardContent>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              <div>
+                <div className="text-xs text-gray-500 mb-1">Plataforma</div>
+                <Select value={platform} onValueChange={setPlatform}>
+                  <SelectTrigger>
+                    <SelectValue placeholder="Escolha plataforma" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {platforms.map((p) => (
+                      <SelectItem key={p} value={p}>{p}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+              <div>
+                <div className="text-xs text-gray-500 mb-1">Período</div>
+                <Tabs value={period} onValueChange={setPeriod}>
+                  <TabsList>
+                    <TabsTrigger value="7d">7 dias</TabsTrigger>
+                    <TabsTrigger value="30d">30 dias</TabsTrigger>
+                    <TabsTrigger value="90d">90 dias</TabsTrigger>
+                  </TabsList>
+                  <TabsContent value="7d" />
+                  <TabsContent value="30d" />
+                  <TabsContent value="90d" />
+                </Tabs>
+              </div>
+              <div className="flex items-end">
+                <Button className="w-full" variant="default">Aplicar</Button>
+              </div>
             </div>
-            <div className="flex items-end">
-              <Button className="w-full" variant="default">Aplicar</Button>
-            </div>
-          </div>
-        </CardContent>
-      </Card>
-    </div>
+          </CardContent>
+        </Card>
+      </div>
+    </Layout>
   );
 }

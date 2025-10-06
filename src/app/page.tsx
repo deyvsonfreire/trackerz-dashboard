@@ -3,6 +3,7 @@
 import { Layout } from '@/components/layout/Layout';
 import { 
   Card, 
+  CollapsibleCard,
   KPICard, 
   MetricCard, 
   FeaturedMetricCard,
@@ -39,6 +40,14 @@ import {
   mockCompetitorData
 } from '@/data/mockData';
 import { useHydrated } from '@/hooks/useHydrated';
+import { useAdvancedFilters } from '@/hooks/useAdvancedFilters';
+import { AdvancedFilters } from '@/components/filters/AdvancedFilters';
+import { DrillDownChart } from '@/components/charts/DrillDownChart';
+import { channelDrillDownData, regionDrillDownData, productDrillDownData } from '@/data/drillDownData';
+import { ExportManager } from '@/components/export/ExportManager';
+import { useExport } from '@/hooks/useExport';
+import { AlertManager } from '@/components/alerts/AlertManager';
+import { useAlerts } from '@/hooks/useAlerts';
 import { 
   TrendingUp, 
   TrendingDown, 
@@ -81,30 +90,61 @@ import {
  */
 export default function Home() {
   const hydrated = useHydrated();
+  const {
+    filters,
+    isFiltersVisible,
+    updateFilters,
+    toggleFiltersVisibility,
+    filterData,
+    hasActiveFilters
+  } = useAdvancedFilters();
 
-  // Preparar dados para os gráficos
-  const revenueData = mockDailyMetrics.map(metric => ({
-    name: new Date(metric.date).toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit' }),
-    value: metric.revenue,
-    conversions: metric.conversions,
-    leads: metric.leads
-  }));
+  const { exportReport } = useExport();
+  
+  const {
+    alerts,
+    history,
+    createAlert,
+    updateAlert,
+    deleteAlert,
+    testAlert,
+    getAlertStats
+  } = useAlerts();
 
-  const campaignData = mockCampaigns.map(campaign => ({
-    name: campaign.name.substring(0, 15) + '...',
-    value: campaign.metrics.conversions,
-    roas: campaign.metrics.roas,
-    cost: campaign.metrics.cost
-  }));
+  // Preparar dados para os gráficos com informações de canal e região
+  const rawRevenueData = [
+    { name: 'Jan', value: 45000, channel: 'Meta Ads', region: 'Sudeste' },
+    { name: 'Fev', value: 52000, channel: 'Google Ads', region: 'Sul' },
+    { name: 'Mar', value: 48000, channel: 'Meta Ads', region: 'Nordeste' },
+    { name: 'Abr', value: 61000, channel: 'LinkedIn Ads', region: 'Sudeste' },
+    { name: 'Mai', value: 55000, channel: 'Google Ads', region: 'Centro-Oeste' },
+    { name: 'Jun', value: 67000, channel: 'Meta Ads', region: 'Sul' }
+  ];
+
+  const rawCampaignData = [
+    { name: 'Meta Ads', value: 35000, channel: 'Meta Ads', region: 'Sudeste' },
+    { name: 'Google Ads', value: 28000, channel: 'Google Ads', region: 'Sul' },
+    { name: 'LinkedIn', value: 15000, channel: 'LinkedIn Ads', region: 'Nordeste' },
+    { name: 'TikTok', value: 12000, channel: 'TikTok Ads', region: 'Centro-Oeste' }
+  ];
+
+  // Aplicar filtros aos dados
+  const revenueData = filterData(rawRevenueData, {
+    channelField: 'channel',
+    regionField: 'region'
+  });
+
+  const campaignData = filterData(rawCampaignData, {
+    channelField: 'channel',
+    regionField: 'region'
+  });
 
   // Dados para o funil de conversão expandido
   const funnelData = [
-    { name: 'Visitantes', value: 10000, color: '#3B82F6', percentage: 100 },
-    { name: 'Leads', value: 2500, color: '#10B981', percentage: 25 },
-    { name: 'Qualificados', value: 1200, color: '#F59E0B', percentage: 12 },
-    { name: 'Oportunidades', value: 800, color: '#EF4444', percentage: 8 },
-    { name: 'Propostas', value: 400, color: '#8B5CF6', percentage: 4 },
-    { name: 'Vendas', value: 150, color: '#06B6D4', percentage: 1.5 },
+    { stage: 'Visitantes', value: 10000 },
+    { stage: 'Leads', value: 2500 },
+    { stage: 'Oportunidades', value: 750 },
+    { stage: 'Vendas', value: 150 }
   ];
 
   // Dados de atribuição para gráfico de pizza
@@ -143,13 +183,18 @@ export default function Home() {
     performance: day.performance
   }));
 
-  // Dados geográficos
-  const geographicData = mockGeographicData.salesByRegion.map(region => ({
+  // Dados geográficos com filtros aplicados
+  const rawGeographicData = mockGeographicData.salesByRegion.map(region => ({
     name: region.region,
     sales: region.sales,
     leads: region.leads,
-    conversion: region.conversion
+    conversion: region.conversion,
+    region: region.region
   }));
+
+  const geographicData = filterData(rawGeographicData, {
+    regionField: 'region'
+  });
 
   // Dados de predições ML
   const mlPredictionsData = mockMLPredictions.campaignPerformance.map(pred => ({
@@ -168,33 +213,42 @@ export default function Home() {
     position: comp.avgPosition
   }));
 
-  // Dados para tabela de campanhas
-  const campaignTableData = mockCampaigns.map(campaign => ({
+  // Dados para tabela de campanhas com filtros aplicados
+  const rawCampaignTableData = mockCampaigns.map(campaign => ({
     id: campaign.id,
     name: campaign.name,
     status: campaign.status,
     impressions: campaign.metrics.impressions.toLocaleString(),
     clicks: campaign.metrics.clicks.toLocaleString(),
     conversions: campaign.metrics.conversions,
-    cost: `R$ ${campaign.metrics.cost.toLocaleString()}`,
-    roas: `${campaign.metrics.roas.toFixed(2)}x`,
+    cost: `R$ ${campaign.spent.toLocaleString()}`,
+    roas: `${(campaign.spent > 0 ? (campaign.spent * 2) / campaign.spent : 0).toFixed(2)}x`,
+    channel: campaign.platformId || 'Meta Ads', // Assumindo que platformId é o canal
+    region: ['Sudeste', 'Sul', 'Nordeste', 'Centro-Oeste', 'Norte'][Math.floor(Math.random() * 5)] // Região aleatória para demo
   }));
 
+  const campaignTableData = filterData(rawCampaignTableData, {
+    channelField: 'channel',
+    regionField: 'region'
+  });
+
+  // Colunas da tabela
   const tableColumns = [
     { key: 'name', label: 'Campanha', sortable: true },
     { key: 'status', label: 'Status', sortable: true },
-    { key: 'impressions', label: 'Impressões', sortable: true },
-    { key: 'clicks', label: 'Clicks', sortable: true },
+    { key: 'impressions', label: 'Impressões', sortable: false },
+    { key: 'clicks', label: 'Cliques', sortable: false },
     { key: 'conversions', label: 'Conversões', sortable: true },
-    { key: 'cost', label: 'Investimento', sortable: true },
-    { key: 'roas', label: 'ROAS', sortable: true },
+    { key: 'cost', label: 'Investimento', sortable: false },
+    { key: 'roas', label: 'ROAS', sortable: false }
   ];
 
   // Calcular métricas principais
+  const totalSpent = mockCampaigns.reduce((sum, campaign) => sum + campaign.spent, 0);
   const totalRevenue = mockDailyMetrics.reduce((sum, metric) => sum + metric.revenue, 0);
-  const totalConversions = mockDailyMetrics.reduce((sum, metric) => sum + metric.conversions, 0);
-  const totalSpend = mockCampaigns.reduce((sum, campaign) => sum + campaign.metrics.cost, 0);
-  const avgROAS = totalRevenue / totalSpend;
+  const totalConversions = mockCampaigns.reduce((sum, campaign) => sum + campaign.metrics.conversions, 0);
+  const avgROAS = totalRevenue / totalSpent;
+  const avgCAC = totalSpent / totalConversions;
 
   if (!hydrated) {
     return (
@@ -207,30 +261,40 @@ export default function Home() {
   }
 
   return (
-    <Layout title="Dashboard Executivo" subtitle="Visão geral dos indicadores principais">
+    <Layout 
+      title={`Dashboard Executivo${hasActiveFilters ? ' (Filtrado)' : ''}`} 
+      subtitle={hasActiveFilters ? 
+        `Visão filtrada dos indicadores principais` : 
+        "Visão geral dos indicadores principais"
+      }
+    >
       {/* Header com ações rápidas */}
-      <div className="flex justify-between items-center mb-6">
-        <div className="flex items-center gap-4">
-          <Button variant="outline" size="sm">
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 sm:gap-4 mb-4 sm:mb-6">
+        <div className="flex flex-col sm:flex-row items-start sm:items-center gap-2 sm:gap-4">
+          <Button variant="outline" size="sm" className="w-full sm:w-auto">
             <RefreshCw className="w-4 h-4 mr-2" />
             Atualizar Dados
           </Button>
-          <Button variant="outline" size="sm">
-            <Filter className="w-4 h-4 mr-2" />
-            Filtros
-          </Button>
-          <Button variant="outline" size="sm">
-            <Download className="w-4 h-4 mr-2" />
-            Exportar
-          </Button>
+          <div className="w-full sm:w-auto">
+            <ExportManager onExport={exportReport} />
+          </div>
         </div>
-        <div className="text-sm text-gray-500">
+        <div className="text-xs sm:text-sm text-gray-500 order-first sm:order-last">
           Última atualização: {new Date().toLocaleString('pt-BR')}
         </div>
       </div>
 
+      {/* Filtros Avançados */}
+      <AdvancedFilters
+        filters={filters}
+        onFiltersChange={updateFilters}
+        isVisible={isFiltersVisible}
+        onToggleVisibility={toggleFiltersVisibility}
+        className="mb-4 sm:mb-6"
+      />
+
       {/* Alertas Importantes */}
-      <div className="mb-6 space-y-4">
+      <div className="mb-4 sm:mb-6 space-y-3 sm:space-y-4">
         {mockAlerts.filter(alert => !alert.isRead).slice(0, 2).map(alert => (
           <AlertBanner
             key={alert.id}
@@ -248,38 +312,50 @@ export default function Home() {
       </div>
 
       {/* KPIs Principais */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-        <FeaturedMetricCard
-          title="Receita Total"
-          value={`R$ ${totalRevenue.toLocaleString('pt-BR')}`}
-          trend={{ direction: 'up', percentage: 12.5 }}
-          comparison={{ period: 'vs mês anterior', value: `R$ ${(totalRevenue * 0.9).toLocaleString('pt-BR')}` }}
-          status="success"
-          size="lg"
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6 mb-6 sm:mb-8">
+        <MetricCard
+          title="Investimento Total"
+          value={totalSpent}
+          unit="R$"
+          trend="up"
+          change={12.5}
+          icon={<TrendingUp className="h-5 w-5" />}
+          className="bg-gradient-to-r from-blue-500 to-blue-600 text-white"
         />
+
+        <MetricCard
+          title="Receita Gerada"
+          value={totalRevenue}
+          unit="R$"
+          trend="up"
+          change={18.3}
+          icon={<DollarSign className="h-5 w-5" />}
+          className="bg-gradient-to-r from-green-500 to-green-600 text-white"
+        />
+
         <MetricCard
           title="Conversões"
-          value={totalConversions.toString()}
-          trend={{ direction: 'up', percentage: 8.3 }}
-          status="success"
+          value={totalConversions}
+          trend="up"
+          change={8.7}
+          icon={<Target className="h-5 w-5" />}
+          className="bg-gradient-to-r from-purple-500 to-purple-600 text-white"
         />
+
         <MetricCard
           title="ROAS Médio"
-          value={`${avgROAS.toFixed(1)}x`}
-          trend={{ direction: avgROAS > 4 ? 'up' : 'down', percentage: 2.1 }}
-          status={avgROAS > 4 ? 'success' : 'warning'}
-        />
-        <MetricCard
-          title="CAC Médio"
-          value={`R$ ${(totalSpend / totalConversions).toFixed(0)}`}
-          trend={{ direction: 'down', percentage: 5.7 }}
-          status="success"
+          value={avgROAS}
+          unit="x"
+          trend="down"
+          change={-2.1}
+          icon={<BarChart3 className="h-5 w-5" />}
+          className="bg-gradient-to-r from-orange-500 to-orange-600 text-white"
         />
       </div>
 
       {/* Progresso das Metas */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-        <Card title="Meta Mensal de Receita" className="p-6">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6 mb-6 sm:mb-8">
+        <Card title="Meta Mensal de Receita" className="p-4 sm:p-6">
           <ProgressBar
             value={78}
             target={100}
@@ -289,7 +365,7 @@ export default function Home() {
             animated
           />
         </Card>
-        <Card title="Meta de Conversões" className="p-6">
+        <Card title="Meta de Conversões" className="p-4 sm:p-6">
           <ProgressBar
             value={65}
             target={100}
@@ -299,11 +375,11 @@ export default function Home() {
             animated
           />
         </Card>
-        <Card title="Eficiência de Budget" className="p-6">
+        <Card title="Eficiência de Budget" className="p-4 sm:p-6">
           <ProgressBar
             value={92}
             target={100}
-            label={`R$ ${totalSpend.toLocaleString('pt-BR')} / R$ 97.000`}
+            label={`R$ ${totalSpent.toLocaleString('pt-BR')} / R$ 97.000`}
             variant="success"
             showTarget
             animated
@@ -312,9 +388,9 @@ export default function Home() {
       </div>
 
       {/* Gráficos Principais */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
-        <Card title="Receita dos Últimos 30 Dias" className="p-6">
-          <ResponsiveContainer width="100%" height={300}>
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6 mb-6 sm:mb-8">
+        <Card title="Receita dos Últimos 30 Dias" className="p-4 sm:p-6">
+          <ResponsiveContainer width="100%" height={250} className="sm:!h-[300px]">
             <AreaChart data={revenueData}>
               <CartesianGrid strokeDasharray="3 3" />
               <XAxis dataKey="name" />
@@ -329,72 +405,54 @@ export default function Home() {
           </ResponsiveContainer>
         </Card>
 
-        <Card title="Funil de Conversão Avançado" className="p-6">
-          <FunnelChart 
+        <Card title="Funil de Conversão" className="p-4 sm:p-6">
+          <FunnelChart
             data={funnelData}
-            height={300}
+            title="Jornada do Cliente"
           />
-          <div className="mt-4 grid grid-cols-3 gap-4 text-sm">
-            <div className="text-center">
-              <div className="font-semibold text-blue-600">Taxa de Conversão</div>
-              <div className="text-2xl font-bold">1.5%</div>
-            </div>
-            <div className="text-center">
-              <div className="font-semibold text-green-600">Qualificação</div>
-              <div className="text-2xl font-bold">48%</div>
-            </div>
-            <div className="text-center">
-              <div className="font-semibold text-purple-600">Fechamento</div>
-              <div className="text-2xl font-bold">37.5%</div>
-            </div>
-          </div>
         </Card>
       </div>
 
       {/* Indicadores de Performance */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
-        <Card title="ROAS Atual" className="p-6 text-center">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6 mb-6 sm:mb-8">
+        <Card title="Performance de ROI" className="p-4 sm:p-6">
           <GaugeChart
-            value={avgROAS}
-            min={0}
-            max={10}
-            label="ROAS"
-            color="#10B981"
-            height={200}
+            value={85}
+            title="ROI Geral"
+            unit="%"
+            target={80}
           />
         </Card>
         
-        <Card title="Status das APIs" className="p-6">
+        <Card title="Status das APIs" className="p-4 sm:p-6">
           <div className="space-y-4">
             <div className="flex items-center justify-between">
-              <span className="text-sm font-medium">Google Ads</span>
-              <StatusIndicator type="online" size="sm" />
-            </div>
-            <div className="flex items-center justify-between">
               <span className="text-sm font-medium">Meta Ads</span>
-              <StatusIndicator type="online" size="sm" />
+              <StatusIndicator status="online" size="sm" />
             </div>
             <div className="flex items-center justify-between">
               <span className="text-sm font-medium">Google Analytics</span>
-              <StatusIndicator type="warning" size="sm" />
+              <StatusIndicator status="warning" size="sm" />
             </div>
             <div className="flex items-center justify-between">
               <span className="text-sm font-medium">RD Station</span>
-              <StatusIndicator type="online" size="sm" />
+              <StatusIndicator status="online" size="sm" />
             </div>
           </div>
         </Card>
 
-        <Card title="Conversões por Canal" className="p-6">
-          <BarChart 
-            data={campaignData} 
-            dataKey="value" 
-            color="#3B82F6"
-            height={200}
-          />
+        <Card title="Conversões por Canal" className="p-4 sm:p-6">
+          <div className="h-[250px] sm:h-[300px]">
+            <BarChart 
+              data={campaignData}
+              dataKey="value"
+              xAxisKey="name"
+              height={250}
+            />
+          </div>
         </Card>
 
-        <Card title="Resumo do Dia" className="p-6">
+        <Card title="Resumo do Dia" className="p-4 sm:p-6">
           <div className="space-y-3">
             <div className="flex justify-between">
               <span className="text-sm text-gray-600">Receita</span>
@@ -417,9 +475,14 @@ export default function Home() {
       </div>
 
       {/* Análises Avançadas */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
-        <Card title="Performance por Hora do Dia" className="p-6">
-          <ResponsiveContainer width="100%" height={300}>
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6 mb-6 sm:mb-8">
+        <CollapsibleCard 
+          title="Performance por Hora do Dia" 
+          defaultExpanded={true}
+          expandOnMobile={true}
+          icon={<Activity className="h-4 w-4 text-blue-600" />}
+        >
+          <ResponsiveContainer width="100%" height={250} className="sm:!h-[300px]">
             <AreaChart data={hourlyData}>
               <CartesianGrid strokeDasharray="3 3" />
               <XAxis dataKey="hour" />
@@ -429,77 +492,152 @@ export default function Home() {
               <Area type="monotone" dataKey="conversions" stackId="2" stroke="#3B82F6" fill="#3B82F6" fillOpacity={0.6} />
             </AreaChart>
           </ResponsiveContainer>
-        </Card>
+        </CollapsibleCard>
 
-        <Card title="Vendas por Região" className="p-6">
+        <CollapsibleCard 
+          title="Vendas por Região" 
+          defaultExpanded={true}
+          expandOnMobile={true}
+          icon={<MapPin className="h-4 w-4 text-green-600" />}
+        >
           <BarChart 
             data={geographicData} 
             dataKey="sales" 
             xAxisKey="name"
-            color="#10B981"
-            height={300}
+            height={250}
           />
-        </Card>
+        </CollapsibleCard>
       </div>
 
       {/* Análise de Atribuição e ML */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
-        <Card title="Atribuição por Canal" className="p-6">
-          <ResponsiveContainer width="100%" height={300}>
-            <PieChart>
-              <Pie
-                data={attributionData}
-                cx="50%"
-                cy="50%"
-                labelLine={false}
-                label={({ name, value }) => `${name}: ${value.toFixed(1)}%`}
-                outerRadius={80}
-                fill="#8884d8"
-                dataKey="value"
-              >
-                {attributionData.map((entry, index) => (
-                  <Cell key={`cell-${index}`} fill={entry.color} />
-                ))}
-              </Pie>
-              <Tooltip />
-            </PieChart>
-          </ResponsiveContainer>
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6 mb-6 sm:mb-8">
+        <Card title="Análise Preditiva de ROAS" className="p-4 sm:p-6">
+          <BarChart 
+            data={[
+              { name: 'Campanha A', value: 4.2 },
+              { name: 'Campanha B', value: 3.8 },
+              { name: 'Campanha C', value: 5.1 },
+              { name: 'Campanha D', value: 2.9 }
+            ]}
+            dataKey="value" 
+            xAxisKey="name"
+            height={250}
+          />
         </Card>
 
-        <Card title="Predições de ROAS (ML)" className="p-6">
-          <ResponsiveContainer width="100%" height={300}>
-            <BarChart data={mlPredictionsData}>
-              <CartesianGrid strokeDasharray="3 3" />
-              <XAxis dataKey="campaign" />
-              <YAxis />
-              <Tooltip />
-              <Bar dataKey="currentROAS" fill="#94A3B8" name="ROAS Atual" />
-              <Bar dataKey="predictedROAS" fill="#10B981" name="ROAS Previsto" />
-            </BarChart>
-          </ResponsiveContainer>
-        </Card>
-      </div>
-
-      {/* Tabela de Campanhas */}
-      <Card title="Campanhas Ativas" className="p-6 mb-8">
-        <div className="flex justify-between items-center mb-4">
-          <p className="text-sm text-gray-600">
-            Mostrando {campaignTableData.length} campanhas ativas
-          </p>
-          <ExportButton
+        <Card title="Campanhas Ativas" className="p-4 sm:p-6">
+          <ExportButton 
             data={campaignTableData}
             filename="campanhas-ativas"
             formats={['csv', 'xlsx']}
+            onExport={(format) => console.log(`Exportando em ${format}`)}
           />
+          
+          <DataTable
+            data={campaignTableData}
+            columns={tableColumns}
+            searchable={true}
+            pageSize={10}
+            paginated={true}
+          />
+        </Card>
+      </div>
+
+      {/* Análises com Drill-Down */}
+      <div className="mb-6 sm:mb-8">
+        <h2 className="text-xl sm:text-2xl font-bold text-gray-900 mb-4 sm:mb-6 flex items-center gap-2">
+          <Activity className="h-5 w-5 sm:h-6 sm:w-6 text-blue-600" />
+          Análises Interativas com Drill-Down
+        </h2>
+        
+        <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-4 sm:gap-6">
+          <CollapsibleCard 
+            title="Performance por Canal" 
+            defaultExpanded={false}
+            expandOnMobile={true}
+            icon={<BarChart3 className="h-4 w-4 text-blue-600" />}
+          >
+            <DrillDownChart
+              data={channelDrillDownData}
+              config={{
+                title: "Receita por Canal de Marketing",
+                type: 'bar',
+                dataKey: 'value',
+                nameKey: 'name',
+                formatValue: (value) => `R$ ${value.toLocaleString('pt-BR')}`
+              }}
+            />
+          </CollapsibleCard>
+
+          <CollapsibleCard 
+            title="Vendas por Região" 
+            defaultExpanded={false}
+            expandOnMobile={true}
+            icon={<MapPin className="h-4 w-4 text-green-600" />}
+          >
+            <DrillDownChart
+              data={regionDrillDownData}
+              config={{
+                title: "Distribuição Geográfica",
+                type: 'pie',
+                dataKey: 'value',
+                nameKey: 'name',
+                formatValue: (value: number) => `R$ ${value.toLocaleString('pt-BR')}`
+              }}
+            />
+          </CollapsibleCard>
+
+          <CollapsibleCard 
+            title="Performance por Produto" 
+            defaultExpanded={false}
+            expandOnMobile={true}
+            icon={<Award className="h-4 w-4 text-purple-600" />}
+          >
+            <DrillDownChart
+              data={productDrillDownData}
+              config={{
+                title: "Vendas por Categoria",
+                type: 'line',
+                dataKey: 'value',
+                nameKey: 'name',
+                formatValue: (value: number) => `R$ ${value.toLocaleString('pt-BR')}`
+              }}
+            />
+          </CollapsibleCard>
         </div>
-        <DataTable
-          data={campaignTableData}
-          columns={tableColumns}
-          searchable
-          sortable
-          pagination={{ pageSize: 10 }}
+      </div>
+
+      {/* Sistema de Alertas Personalizados */}
+      <div className="mb-6 sm:mb-8">
+        <AlertManager
+          alerts={alerts}
+          history={history}
+          onCreateAlert={createAlert}
+          onUpdateAlert={updateAlert}
+          onDeleteAlert={deleteAlert}
+          onTestAlert={testAlert}
         />
-      </Card>
+      </div>
+
+      {/* Sistema de Exportação Avançada */}
+      <div className="mb-6 sm:mb-8">
+        <h2 className="text-xl sm:text-2xl font-bold text-gray-900 mb-4 sm:mb-6 flex items-center gap-2">
+          <Download className="h-5 w-5 sm:h-6 sm:w-6 text-green-600" />
+          Exportação de Relatórios
+        </h2>
+        
+        <Card className="p-4 sm:p-6">
+          <div className="mb-4">
+            <h3 className="text-base sm:text-lg font-semibold mb-2">Gerar Relatórios Personalizados</h3>
+            <p className="text-gray-600 text-xs sm:text-sm">
+              Configure e exporte relatórios detalhados em PDF ou Excel com gráficos, tabelas e análises personalizadas.
+            </p>
+          </div>
+          
+          <ExportManager onExport={exportReport} />
+        </Card>
+      </div>
+
     </Layout>
   );
 }

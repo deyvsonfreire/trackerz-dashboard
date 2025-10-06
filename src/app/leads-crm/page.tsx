@@ -40,6 +40,7 @@ import {
 import { FunnelChart } from '@/components/charts/FunnelChart';
 import { SankeyChart } from '@/components/charts/SankeyChart';
 import { useHydrated } from '@/hooks/useHydrated';
+import { Layout } from '@/components/layout/Layout';
 
 /**
  * Interface para dados de lead
@@ -100,6 +101,7 @@ interface LeadSource {
  */
 export default function LeadsCRMPage() {
   const isHydrated = useHydrated();
+  const [activeTab, setActiveTab] = useState('overview');
   const [selectedPeriod, setSelectedPeriod] = useState('current-month');
   const [selectedSource, setSelectedSource] = useState('all');
   const [selectedStatus, setSelectedStatus] = useState('all');
@@ -343,151 +345,37 @@ export default function LeadsCRMPage() {
   const avgLeadValue = totalLeads > 0 ? totalValue / totalLeads : 0;
 
   if (!isHydrated) {
-    return <div>Carregando...</div>;
+    return (
+      <Layout title="Dashboard de Leads (CRM)" subtitle="Gestão e análise de leads e funil de vendas">
+        <div className="flex items-center justify-center h-64">
+          <div className="text-gray-500">Carregando...</div>
+        </div>
+      </Layout>
+    );
   }
 
   return (
-    <div className="container mx-auto p-6 space-y-6">
-      {/* Header */}
-      <div className="flex justify-between items-center">
-        <div>
-          <h1 className="text-3xl font-bold">Leads & CRM</h1>
-          <p className="text-muted-foreground">
-            Gestão completa de leads e análise do funil de vendas
-          </p>
-        </div>
-        <div className="flex gap-2">
-          <Button variant="outline" size="sm">
-            <Download className="h-4 w-4 mr-2" />
-            Exportar
-          </Button>
-          <Button size="sm">
-            <Plus className="h-4 w-4 mr-2" />
-            Novo Lead
-          </Button>
-        </div>
-      </div>
-
-      {/* Filtros e Busca */}
-      <div className="flex gap-4 flex-wrap">
-        <div className="flex-1 min-w-64">
-          <div className="relative">
-            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-            <Input
-              placeholder="Buscar leads..."
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-              className="pl-10"
-            />
+    <Layout title="Dashboard de Leads (CRM)" subtitle="Gestão e análise de leads e funil de vendas">
+      <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-4">
+        <div className="flex justify-between items-center">
+          <TabsList>
+            <TabsTrigger value="overview">Visão Geral</TabsTrigger>
+            <TabsTrigger value="funnel">Funil de Vendas</TabsTrigger>
+            <TabsTrigger value="sources">Fontes</TabsTrigger>
+            <TabsTrigger value="leads">Lista de Leads</TabsTrigger>
+            <TabsTrigger value="analytics">Analytics</TabsTrigger>
+            <TabsTrigger value="reports">Relatórios</TabsTrigger>
+          </TabsList>
+          <div className="flex items-center gap-2">
+            <Button variant="outline" size="sm">
+              <Download className="h-4 w-4 mr-2" />
+              Exportar
+            </Button>
+            <Button size="sm">
+              <Plus className="mr-2 h-4 w-4" /> Adicionar Lead
+            </Button>
           </div>
         </div>
-
-        <Select value={selectedPeriod} onValueChange={setSelectedPeriod}>
-          <SelectTrigger className="w-48">
-            <SelectValue placeholder="Período" />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="current-month">Mês Atual</SelectItem>
-            <SelectItem value="last-month">Mês Anterior</SelectItem>
-            <SelectItem value="quarter">Trimestre</SelectItem>
-            <SelectItem value="year">Ano</SelectItem>
-          </SelectContent>
-        </Select>
-
-        <Select value={selectedSource} onValueChange={setSelectedSource}>
-          <SelectTrigger className="w-48">
-            <SelectValue placeholder="Fonte" />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="all">Todas as Fontes</SelectItem>
-            <SelectItem value="google-ads">Google Ads</SelectItem>
-            <SelectItem value="linkedin">LinkedIn</SelectItem>
-            <SelectItem value="website">Website</SelectItem>
-            <SelectItem value="referral">Indicação</SelectItem>
-          </SelectContent>
-        </Select>
-
-        <Select value={selectedStatus} onValueChange={setSelectedStatus}>
-          <SelectTrigger className="w-48">
-            <SelectValue placeholder="Status" />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="all">Todos os Status</SelectItem>
-            <SelectItem value="new">Novos</SelectItem>
-            <SelectItem value="qualified">Qualificados</SelectItem>
-            <SelectItem value="proposal">Proposta</SelectItem>
-            <SelectItem value="won">Fechados</SelectItem>
-          </SelectContent>
-        </Select>
-      </div>
-
-      {/* KPIs Principais */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Total de Leads</CardTitle>
-            <Users className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{totalLeads}</div>
-            <p className="text-xs text-muted-foreground">
-              +12% vs período anterior
-            </p>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Taxa de Conversão</CardTitle>
-            <Target className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{conversionRate.toFixed(1)}%</div>
-            <p className="text-xs text-muted-foreground">
-              {wonLeads} de {totalLeads} leads
-            </p>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Valor Total</CardTitle>
-            <DollarSign className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">
-              R$ {totalValue.toLocaleString('pt-BR')}
-            </div>
-            <p className="text-xs text-muted-foreground">
-              Pipeline total
-            </p>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Ticket Médio</CardTitle>
-            <TrendingUp className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">
-              R$ {avgLeadValue.toLocaleString('pt-BR')}
-            </div>
-            <p className="text-xs text-muted-foreground">
-              Por lead
-            </p>
-          </CardContent>
-        </Card>
-      </div>
-
-      <Tabs defaultValue="overview" className="space-y-4">
-        <TabsList>
-          <TabsTrigger value="overview">Visão Geral</TabsTrigger>
-          <TabsTrigger value="funnel">Funil de Vendas</TabsTrigger>
-          <TabsTrigger value="sources">Fontes</TabsTrigger>
-          <TabsTrigger value="leads">Lista de Leads</TabsTrigger>
-          <TabsTrigger value="analytics">Analytics</TabsTrigger>
-        </TabsList>
 
         <TabsContent value="overview" className="space-y-4">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
@@ -906,6 +794,6 @@ export default function LeadsCRMPage() {
           </Card>
         </TabsContent>
       </Tabs>
-    </div>
+    </Layout>
   );
 }

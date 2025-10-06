@@ -72,12 +72,7 @@ export default function PlatformsPage() {
   return (
     <Layout title="Gestão de Plataformas" subtitle="Configure e gerencie suas plataformas de marketing">
       <div className="space-y-6">
-        {/* Header com botão de adicionar */}
-        <div className="flex justify-between items-center">
-          <div>
-            <h2 className="text-xl font-semibold text-gray-900">Plataformas Conectadas</h2>
-            <p className="text-gray-600">Gerencie suas integrações e configurações</p>
-          </div>
+        <div className="flex justify-end items-center">
           <button
             onClick={() => setShowAddForm(true)}
             className="flex items-center gap-2 bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors"

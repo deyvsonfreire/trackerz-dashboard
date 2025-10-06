@@ -1,5 +1,6 @@
 // ===== COMPONENTES BASE =====
 export { Card, CardContent, CardDescription, CardHeader, CardTitle } from './Card';
+export { CollapsibleCard } from './CollapsibleCard';
 export { Button } from './Button';
 export { Badge } from './badge';
 export { Input } from './input';
@@ -48,7 +49,7 @@ export {
 } from './StatusIndicator';
 
 // ===== COMPONENTES DE DADOS =====
-export { DataTable } from './DataTable';
+export { DataTable, type DataTableColumn, type DataTableProps } from './DataTable';
 export { FilterPanel } from './FilterPanel';
 export { SearchBox } from './SearchBox';
 export { 

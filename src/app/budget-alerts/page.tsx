@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState } from 'react';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle, Button, Badge, Progress, Tabs, TabsContent, TabsList, TabsTrigger, Select, SelectContent, SelectItem, SelectTrigger, SelectValue, Alert, AlertDescription, AlertTitle } from '@/components/ui';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle, Button, Badge, Progress, Tabs, TabsContent, TabsList, TabsTrigger, Select, SelectContent, SelectItem, SelectTrigger, SelectValue, Alert, AlertDescription, AlertTitle, MetricCard } from '@/components/ui';
 import { 
   AlertTriangle, 
   TrendingUp, 
@@ -18,6 +18,7 @@ import {
 import { LineChart, Line, AreaChart, Area, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell } from 'recharts';
 import { GaugeChart } from '@/components/charts/GaugeChart';
 import { useHydrated } from '@/hooks/useHydrated';
+import { Layout } from '@/components/layout/Layout';
 
 /**
  * Interface para dados de orçamento
@@ -205,33 +206,20 @@ export default function BudgetAlertsPage() {
   const overallPercentage = (totalSpent / totalBudget) * 100;
 
   if (!isHydrated) {
-    return <div>Carregando...</div>;
+    // Renderiza um loader ou um estado de esqueleto enquanto o componente não está hidratado
+    return (
+      <Layout title="Alertas de Orçamento" subtitle="Monitoramento de orçamentos e alertas de gastos em tempo real">
+        <div className="flex items-center justify-center h-64">
+          <div className="text-gray-500">Carregando...</div>
+        </div>
+      </Layout>
+    );
   }
 
   return (
-    <div className="container mx-auto p-6 space-y-6">
-      {/* Header */}
-      <div className="flex justify-between items-center">
-        <div>
-          <h1 className="text-3xl font-bold">Budget Alerts</h1>
-          <p className="text-muted-foreground">
-            Monitoramento de orçamentos e alertas de gastos em tempo real
-          </p>
-        </div>
-        <div className="flex gap-2">
-          <Button variant="outline" size="sm">
-            <Settings className="h-4 w-4 mr-2" />
-            Configurar Alertas
-          </Button>
-          <Button size="sm">
-            <Bell className="h-4 w-4 mr-2" />
-            Criar Alerta
-          </Button>
-        </div>
-      </div>
-
-      {/* Filtros */}
-      <div className="flex gap-4">
+    <Layout title="Alertas de Orçamento" subtitle="Monitoramento de orçamentos e alertas de gastos em tempo real">
+        {/* Filtros */}
+        <div className="flex gap-4">
         <Select value={selectedPeriod} onValueChange={setSelectedPeriod}>
           <SelectTrigger className="w-48">
             <SelectValue placeholder="Período" />
@@ -258,67 +246,35 @@ export default function BudgetAlertsPage() {
         </Select>
       </div>
 
-      {/* Resumo Geral */}
+      {/* KPIs */}
       <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Orçamento Total</CardTitle>
-            <DollarSign className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">
-              R$ {totalBudget.toLocaleString('pt-BR')}
-            </div>
-            <p className="text-xs text-muted-foreground">
-              Para o período selecionado
-            </p>
-          </CardContent>
-        </Card>
+        <MetricCard
+          title="Orçamento Total"
+          value={`R$ ${totalBudget.toLocaleString('pt-BR')}`}
+          icon={<DollarSign className="h-4 w-4 text-muted-foreground" />}
+          description="Para o período selecionado"
+        />
 
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Total Gasto</CardTitle>
-            <TrendingUp className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">
-              R$ {totalSpent.toLocaleString('pt-BR')}
-            </div>
-            <p className="text-xs text-muted-foreground">
-              {overallPercentage.toFixed(1)}% do orçamento
-            </p>
-          </CardContent>
-        </Card>
+        <MetricCard
+          title="Total Gasto"
+          value={`R$ ${totalSpent.toLocaleString('pt-BR')}`}
+          icon={<TrendingUp className="h-4 w-4 text-muted-foreground" />}
+          description={`${overallPercentage.toFixed(1)}% do orçamento`}
+        />
 
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Restante</CardTitle>
-            <Target className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">
-              R$ {totalRemaining.toLocaleString('pt-BR')}
-            </div>
-            <p className="text-xs text-muted-foreground">
-              Disponível para gastos
-            </p>
-          </CardContent>
-        </Card>
+        <MetricCard
+          title="Restante"
+          value={`R$ ${totalRemaining.toLocaleString('pt-BR')}`}
+          icon={<Target className="h-4 w-4 text-muted-foreground" />}
+          description="Disponível para gastos"
+        />
 
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Alertas Ativos</CardTitle>
-            <AlertTriangle className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">
-              {budgetAlerts.filter(alert => !alert.acknowledged).length}
-            </div>
-            <p className="text-xs text-muted-foreground">
-              Requerem atenção
-            </p>
-          </CardContent>
-        </Card>
+        <MetricCard
+          title="Alertas Ativos"
+          value={budgetAlerts.filter(alert => !alert.acknowledged).length}
+          icon={<AlertTriangle className="h-4 w-4 text-muted-foreground" />}
+          description="Requerem atenção"
+        />
       </div>
 
       {/* Alertas Críticos */}
@@ -602,6 +558,6 @@ export default function BudgetAlertsPage() {
           </div>
         </TabsContent>
       </Tabs>
-    </div>
+    </Layout>
   );
 }

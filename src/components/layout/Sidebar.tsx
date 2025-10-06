@@ -11,7 +11,10 @@ import {
   UserCheck, 
   TrendingUp,
   X,
-  Layers
+  Layers,
+  AlertTriangle,
+  DollarSign,
+  Clapperboard
 } from 'lucide-react';
 import { cn } from '@/utils/cn';
 
@@ -42,9 +45,14 @@ const menuItems = [
     icon: Target
   },
   {
-    name: 'Conteúdo Orgânico',
-    href: '/organic',
+    name: 'SEO Orgânico',
+    href: '/seo-organic',
     icon: FileText
+  },
+  {
+    name: 'Leads CRM',
+    href: '/leads-crm',
+    icon: Users
   },
   {
     name: 'Audiência',
@@ -52,14 +60,24 @@ const menuItems = [
     icon: UserCheck
   },
   {
-    name: 'Perfil Unificado',
-    href: '/customer-profile',
-    icon: Users
-  },
-  {
     name: 'Indicadores Mensais',
     href: '/monthly-indicators',
     icon: TrendingUp
+  },
+  {
+    name: 'Alertas de Orçamento',
+    href: '/budget-alerts',
+    icon: AlertTriangle
+  },
+  {
+    name: 'Análise de Margem',
+    href: '/margin-analysis',
+    icon: DollarSign
+  },
+  {
+    name: 'Vídeo Marketing',
+    href: '/video-marketing',
+    icon: Clapperboard
   },
   {
     name: 'Configurações',
@@ -88,27 +106,27 @@ export function Sidebar({ isOpen, onClose }: SidebarProps) {
 
       {/* Sidebar */}
       <div className={cn(
-        'fixed inset-y-0 left-0 z-50 w-64 bg-white border-r border-gray-200 transform transition-transform duration-300 ease-in-out lg:translate-x-0 lg:static lg:inset-0',
+        'fixed inset-y-0 left-0 z-50 w-64 sm:w-72 bg-white border-r border-gray-200 transform transition-transform duration-300 ease-in-out lg:translate-x-0',
         isOpen ? 'translate-x-0' : '-translate-x-full'
       )}>
-        <div className="flex items-center justify-between p-4 border-b border-gray-200">
+        <div className="flex items-center justify-between p-3 sm:p-4 border-b border-gray-200">
           <div className="flex items-center space-x-2">
-            <div className="w-8 h-8 bg-blue-600 rounded-lg flex items-center justify-center">
-              <BarChart3 className="h-5 w-5 text-white" />
+            <div className="w-7 h-7 sm:w-8 sm:h-8 bg-blue-600 rounded-lg flex items-center justify-center">
+              <BarChart3 className="h-4 w-4 sm:h-5 sm:w-5 text-white" />
             </div>
-            <span className="text-xl font-bold text-gray-900">Trackerz</span>
+            <span className="text-lg sm:text-xl font-bold text-gray-900">Trackerz</span>
           </div>
           
           <button
             onClick={onClose}
-            className="p-1 rounded-md text-gray-400 hover:text-gray-600 lg:hidden"
+            className="p-1.5 sm:p-1 rounded-md text-gray-400 hover:text-gray-600 lg:hidden transition-colors"
           >
             <X className="h-5 w-5" />
           </button>
         </div>
 
-        <nav className="mt-6 px-4">
-          <ul className="space-y-2">
+        <nav className="mt-4 sm:mt-6 px-3 sm:px-4">
+          <ul className="space-y-1 sm:space-y-2">
             {menuItems.map((item) => {
               const Icon = item.icon;
               const isActive = pathname === item.href;
@@ -119,17 +137,17 @@ export function Sidebar({ isOpen, onClose }: SidebarProps) {
                     href={item.href}
                     onClick={onClose}
                     className={cn(
-                      'flex items-center space-x-3 px-3 py-2 rounded-lg text-sm font-medium transition-colors',
+                      'flex items-center space-x-2 sm:space-x-3 px-2 sm:px-3 py-2.5 sm:py-2 rounded-lg text-sm font-medium transition-colors',
                       isActive
                         ? 'bg-blue-50 text-blue-700 border-r-2 border-blue-700'
                         : 'text-gray-700 hover:bg-gray-100 hover:text-gray-900'
                     )}
                   >
                     <Icon className={cn(
-                      'h-5 w-5',
+                      'h-4 w-4 sm:h-5 sm:w-5 flex-shrink-0',
                       isActive ? 'text-blue-700' : 'text-gray-500'
                     )} />
-                    <span>{item.name}</span>
+                    <span className="truncate">{item.name}</span>
                   </Link>
                 </li>
               );
@@ -137,8 +155,8 @@ export function Sidebar({ isOpen, onClose }: SidebarProps) {
           </ul>
         </nav>
 
-        <div className="absolute bottom-4 left-4 right-4">
-          <div className="bg-gray-50 rounded-lg p-4">
+        <div className="absolute bottom-3 sm:bottom-4 left-3 sm:left-4 right-3 sm:right-4">
+          <div className="bg-gray-50 rounded-lg p-3 sm:p-4">
             <p className="text-xs text-gray-600 text-center">
               Trackerz v1.0.0
             </p>

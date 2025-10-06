@@ -1,19 +1,36 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import { Layout } from '@/components/layout/Layout';
 import { 
   Card, 
   MetricCard, 
   DataTable, 
-  ExportButton, 
-  FilterPanel,
+  DataTableColumn,
   AlertBanner,
-  StatusIndicator 
+  StatusIndicator,
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue
 } from '@/components/ui';
 import { LineChart, BarChart } from '@/components/charts';
-import { PieChart, Pie, Cell, ResponsiveContainer } from 'recharts';
-import { TrendingUp, TrendingDown, Target, DollarSign, Eye, MousePointer, Calendar, Filter, Download } from 'lucide-react';
+import { 
+  PieChart, 
+  Pie, 
+  Cell, 
+  ResponsiveContainer,
+  BarChart as RechartsBarChart,
+  LineChart as RechartsLineChart,
+  CartesianGrid,
+  XAxis,
+  YAxis,
+  Tooltip,
+  Bar,
+  Line
+} from 'recharts';
+import { TrendingUp, TrendingDown, Target, DollarSign, MousePointer } from 'lucide-react';
 import { mockCampaigns, mockDailyMetrics } from '@/data/mockData';
 import { Campaign } from '@/types';
 import { useHydrated } from '@/hooks/useHydrated';
@@ -28,8 +45,36 @@ export default function CampaignsPage() {
   const [selectedPlatform, setSelectedPlatform] = useState('all');
   const [selectedCampaign, setSelectedCampaign] = useState<Campaign | null>(null);
 
+  const filteredCampaigns = useMemo(() => {
+    return mockCampaigns.filter(campaign => {
+      if (selectedPlatform === 'all') {
+        return true;
+      }
+      return campaign.platformId === selectedPlatform;
+    });
+  }, [selectedPlatform]);
+
+  const tableData = useMemo(() => filteredCampaigns.map(campaign => {
+    const ctr = ((campaign.metrics.clicks / campaign.metrics.impressions) * 100);
+    const cpc = (campaign.budget / campaign.metrics.clicks);
+    return {
+      ...campaign,
+      impressions: campaign.metrics.impressions,
+      clicks: campaign.metrics.clicks,
+      conversions: campaign.metrics.conversions,
+      ctr: isNaN(ctr) ? 0 : ctr,
+      cpc: isNaN(cpc) ? 0 : cpc,
+    }
+  }), [filteredCampaigns]);
+
   if (!isHydrated) {
-    return <div>Carregando...</div>;
+    return (
+      <Layout title="Performance de Campanhas" subtitle="Análise detalhada de métricas e ROI">
+        <div className="flex items-center justify-center h-64">
+          <div className="text-gray-500">Carregando...</div>
+        </div>
+      </Layout>
+    );
   }
 
   // Dados para gráficos
@@ -69,44 +114,62 @@ export default function CampaignsPage() {
 
   const activeCampaigns = mockCampaigns.filter(c => c.status === 'active').length;
 
+  const columns: DataTableColumn<any>[] = [
+    { key: 'name', label: 'Campanha', sortable: true, filterable: true, width: '25%' },
+    { key: 'platformId', label: 'Plataforma', sortable: true, filterable: true },
+    {
+      key: 'status',
+      label: 'Status',
+      sortable: true,
+      filterable: true,
+      render: (status) => {
+        const statusMap: { [key: string]: 'success' | 'warning' | 'error' | 'active' } = {
+          active: 'active',
+          paused: 'warning',
+          ended: 'error',
+        };
+        const statusLabelMap: { [key: string]: string } = {
+          active: 'Ativa',
+          paused: 'Pausada',
+          ended: 'Finalizada',
+        };
+        return <StatusIndicator status={statusMap[status as string]} label={statusLabelMap[status as string]} />;
+      }
+    },
+    { key: 'impressions', label: 'Impressões', sortable: true, align: 'right', render: (val) => (val as number).toLocaleString() },
+    { key: 'clicks', label: 'Cliques', sortable: true, align: 'right', render: (val) => (val as number).toLocaleString() },
+    { key: 'conversions', label: 'Conversões', sortable: true, align: 'right' },
+    { key: 'ctr', label: 'CTR', sortable: true, align: 'right', render: (val) => `${(val as number).toFixed(2)}%` },
+    { key: 'cpc', label: 'CPC', sortable: true, align: 'right', render: (val) => `R$ ${(val as number).toFixed(2)}` },
+  ];
+
   return (
-    <Layout title="Performance de Campanhas">
+    <Layout title="Performance de Campanhas" subtitle="Análise detalhada de métricas e ROI">
       <div className="space-y-6">
-        {/* Header */}
-        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
-          <div>
-            <h1 className="text-3xl font-bold text-gray-900">Performance de Campanhas</h1>
-            <p className="text-gray-600 mt-1">Análise detalhada de métricas e ROI</p>
-          </div>
-          
-          <div className="flex flex-wrap gap-3">
-            <select 
-              value={selectedPeriod} 
-              onChange={(e) => setSelectedPeriod(e.target.value)}
-              className="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-            >
-              <option value="7d">Últimos 7 dias</option>
-              <option value="30d">Últimos 30 dias</option>
-              <option value="90d">Últimos 90 dias</option>
-            </select>
+        <div className="flex flex-wrap justify-end gap-3">
+            <Select value={selectedPeriod} onValueChange={setSelectedPeriod}>
+              <SelectTrigger className="w-[180px]">
+                <SelectValue placeholder="Selecione o período" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="7d">Últimos 7 dias</SelectItem>
+                <SelectItem value="30d">Últimos 30 dias</SelectItem>
+                <SelectItem value="90d">Últimos 90 dias</SelectItem>
+              </SelectContent>
+            </Select>
             
-            <select 
-              value={selectedPlatform} 
-              onChange={(e) => setSelectedPlatform(e.target.value)}
-              className="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-            >
-              <option value="all">Todas as Plataformas</option>
-              <option value="Meta Ads">Meta Ads</option>
-              <option value="Google Ads">Google Ads</option>
-              <option value="LinkedIn">LinkedIn</option>
-            </select>
-            
-            <button className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors">
-              <Download className="w-4 h-4" />
-              Exportar
-            </button>
+            <Select value={selectedPlatform} onValueChange={setSelectedPlatform}>
+              <SelectTrigger className="w-[200px]">
+                <SelectValue placeholder="Selecione a plataforma" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">Todas as Plataformas</SelectItem>
+                <SelectItem value="Meta Ads">Meta Ads</SelectItem>
+                <SelectItem value="Google Ads">Google Ads</SelectItem>
+                <SelectItem value="LinkedIn">LinkedIn</SelectItem>
+              </SelectContent>
+            </Select>
           </div>
-        </div>
 
         {/* Alertas de Performance */}
         <AlertBanner
@@ -127,9 +190,9 @@ export default function CampaignsPage() {
             value={activeCampaigns}
             icon={<Target className="w-6 h-6" />}
             trend="up"
-            trendValue={12}
-            comparison="vs mês anterior"
-            variant="primary"
+            change={12}
+            status="info"
+            comparisonLabel="vs mês anterior"
           />
 
           <MetricCard
@@ -137,9 +200,9 @@ export default function CampaignsPage() {
             value={`${avgCTR}%`}
             icon={<MousePointer className="w-6 h-6" />}
             trend="up"
-            trendValue={0.8}
-            comparison="vs mês anterior"
-            variant="success"
+            change={0.8}
+            status="success"
+            comparisonLabel="vs mês anterior"
           />
 
           <MetricCard
@@ -147,9 +210,9 @@ export default function CampaignsPage() {
             value={`R$ ${avgCPC}`}
             icon={<DollarSign className="w-6 h-6" />}
             trend="down"
-            trendValue={5.2}
-            comparison="vs mês anterior"
-            variant="warning"
+            change={5.2}
+            status="warning"
+            comparisonLabel="vs mês anterior"
             description="Redução no custo por clique"
           />
 
@@ -158,10 +221,9 @@ export default function CampaignsPage() {
             value={`${totalROAS}x`}
             icon={<TrendingUp className="w-6 h-6" />}
             trend="up"
-            trendValue={18.5}
-            comparison="vs mês anterior"
-            variant="success"
-            target={3.5}
+            change={18.5}
+            status="success"
+            comparisonLabel="vs mês anterior"
             description="Retorno sobre investimento"
           />
         </div>
@@ -211,14 +273,14 @@ export default function CampaignsPage() {
           <Card className="p-6">
             <h3 className="text-lg font-semibold text-gray-900 mb-4">CTR e CPC por Dia</h3>
             <ResponsiveContainer width="100%" height={300}>
-              <BarChart data={performanceData}>
+              <RechartsBarChart data={performanceData}>
                 <CartesianGrid strokeDasharray="3 3" />
                 <XAxis dataKey="date" />
                 <YAxis />
                 <Tooltip />
                 <Bar dataKey="ctr" fill="#3B82F6" name="CTR (%)" />
                 <Bar dataKey="cpc" fill="#10B981" name="CPC (R$)" />
-              </BarChart>
+              </RechartsBarChart>
             </ResponsiveContainer>
           </Card>
 
@@ -226,13 +288,13 @@ export default function CampaignsPage() {
           <Card className="p-6">
             <h3 className="text-lg font-semibold text-gray-900 mb-4">ROAS por Dia</h3>
             <ResponsiveContainer width="100%" height={300}>
-              <LineChart data={performanceData}>
+              <RechartsLineChart data={performanceData}>
                 <CartesianGrid strokeDasharray="3 3" />
                 <XAxis dataKey="date" />
                 <YAxis />
                 <Tooltip />
                 <Line type="monotone" dataKey="roas" stroke="#8B5CF6" strokeWidth={3} name="ROAS" />
-              </LineChart>
+              </RechartsLineChart>
             </ResponsiveContainer>
           </Card>
         </div>
@@ -240,81 +302,16 @@ export default function CampaignsPage() {
         {/* Lista de Campanhas */}
         <Card className="p-6">
           <h3 className="text-lg font-semibold text-gray-900 mb-4">Campanhas Ativas</h3>
-          <div className="overflow-x-auto">
-            <table className="min-w-full divide-y divide-gray-200">
-              <thead className="bg-gray-50">
-                <tr>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Campanha
-                  </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Plataforma
-                  </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Status
-                  </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Impressões
-                  </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Cliques
-                  </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Conversões
-                  </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    CTR
-                  </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    CPC
-                  </th>
-                </tr>
-              </thead>
-              <tbody className="bg-white divide-y divide-gray-200">
-                {mockCampaigns.map((campaign) => {
-                  const ctr = ((campaign.metrics.clicks / campaign.metrics.impressions) * 100).toFixed(2);
-                  const cpc = (campaign.budget / campaign.metrics.clicks).toFixed(2);
-                  
-                  return (
-                    <tr key={campaign.id} className="hover:bg-gray-50 cursor-pointer" onClick={() => setSelectedCampaign(campaign)}>
-                      <td className="px-6 py-4 whitespace-nowrap">
-                        <div className="text-sm font-medium text-gray-900">{campaign.name}</div>
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap">
-                        <div className="text-sm text-gray-900">{campaign.platformId}</div>
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap">
-                        <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${
-                          campaign.status === 'active' 
-                            ? 'bg-green-100 text-green-800' 
-                            : campaign.status === 'paused'
-                            ? 'bg-yellow-100 text-yellow-800'
-                            : 'bg-red-100 text-red-800'
-                        }`}>
-                          {campaign.status === 'active' ? 'Ativa' : campaign.status === 'paused' ? 'Pausada' : 'Finalizada'}
-                        </span>
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                        {campaign.metrics.impressions.toLocaleString()}
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                        {campaign.metrics.clicks.toLocaleString()}
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                        {campaign.metrics.conversions}
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                        {ctr}%
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                        R$ {cpc}
-                      </td>
-                    </tr>
-                  );
-                })}
-              </tbody>
-            </table>
-          </div>
+          <DataTable
+            columns={columns}
+            data={tableData}
+            searchable
+            paginated
+            exportable
+            onRowClick={(row) => setSelectedCampaign(row as Campaign)}
+            emptyMessage="Nenhuma campanha encontrada."
+            searchPlaceholder="Buscar por nome ou plataforma..."
+          />
         </Card>
 
         {/* Modal de Detalhes da Campanha */}

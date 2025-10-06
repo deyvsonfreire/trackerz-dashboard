@@ -1,7 +1,28 @@
 'use client';
 
 import React, { useState } from 'react';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle, Button, Badge, Switch, Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui';
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+  Button,
+  Badge,
+  Switch,
+  Tabs,
+  TabsContent,
+  TabsList,
+  TabsTrigger,
+  MetricCard,
+  StatusIndicator,
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+  Input
+} from '@/components/ui';
 import { 
   Settings, 
   Key, 
@@ -17,6 +38,8 @@ import {
   EyeOff
 } from 'lucide-react';
 import Link from 'next/link';
+import { Layout } from '@/components/layout/Layout';
+import { useHydrated } from '@/hooks/useHydrated';
 
 /**
  * Interface para configuração de API
@@ -58,6 +81,7 @@ interface GeneralConfig {
  * - Gerenciamento de credenciais
  */
 export default function SettingsPage() {
+  const hydrated = useHydrated();
   const [generalConfig, setGeneralConfig] = useState<GeneralConfig>({
     autoSync: true,
     syncInterval: 60,
@@ -136,77 +160,28 @@ export default function SettingsPage() {
     }
   ];
 
-  /**
-   * Retorna a cor do status
-   */
-  const getStatusColor = (status: string) => {
-    switch (status) {
-      case 'connected': return 'bg-green-100 text-green-800';
-      case 'disconnected': return 'bg-gray-100 text-gray-800';
-      case 'error': return 'bg-red-100 text-red-800';
-      case 'pending': return 'bg-yellow-100 text-yellow-800';
-      default: return 'bg-gray-100 text-gray-800';
-    }
-  };
 
-  /**
-   * Retorna o ícone do status
-   */
-  const getStatusIcon = (status: string) => {
-    switch (status) {
-      case 'connected': return <CheckCircle className="h-4 w-4" />;
-      case 'disconnected': return <XCircle className="h-4 w-4" />;
-      case 'error': return <AlertTriangle className="h-4 w-4" />;
-      case 'pending': return <AlertTriangle className="h-4 w-4" />;
-      default: return <XCircle className="h-4 w-4" />;
-    }
-  };
 
-  /**
-   * Retorna o texto do status em português
-   */
-  const getStatusText = (status: string) => {
-    switch (status) {
-      case 'connected': return 'Conectado';
-      case 'disconnected': return 'Desconectado';
-      case 'error': return 'Erro';
-      case 'pending': return 'Pendente';
-      default: return status;
-    }
-  };
-
-  /**
-   * Simula teste de conexão
-   */
   const testConnection = (apiId: string) => {
     console.log(`Testando conexão para ${apiId}`);
-    // Aqui seria implementada a lógica real de teste
   };
 
-  /**
-   * Simula sincronização manual
-   */
   const syncData = (apiId: string) => {
     console.log(`Sincronizando dados para ${apiId}`);
-    // Aqui seria implementada a lógica real de sincronização
   };
 
-  return (
-    <div className="container mx-auto p-6 space-y-6">
-      {/* Header */}
-      <div className="flex justify-between items-center">
-        <div>
-          <h1 className="text-3xl font-bold">Configurações</h1>
-          <p className="text-muted-foreground">
-            Gerencie integrações de APIs e configurações do sistema
-          </p>
+  if (!hydrated) {
+    return (
+      <Layout title="Configurações" subtitle="Gerencie as configurações do sistema e integrações">
+        <div className="flex items-center justify-center h-64">
+          <div className="text-gray-500">Carregando...</div>
         </div>
-        <Button>
-          <Plus className="h-4 w-4 mr-2" />
-          Nova Integração
-        </Button>
-      </div>
+      </Layout>
+    );
+  }
 
+  return (
+    <Layout title="Configurações" subtitle="Gerencie as configurações do sistema e integrações">
       <Tabs defaultValue="integrations" className="space-y-4">
         <TabsList>
           <TabsTrigger value="integrations">Integrações</TabsTrigger>
@@ -216,68 +191,33 @@ export default function SettingsPage() {
         </TabsList>
 
         <TabsContent value="integrations" className="space-y-4">
-          {/* Status Geral das Integrações */}
           <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-            <Card>
-              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                <CardTitle className="text-sm font-medium">Total de APIs</CardTitle>
-                <Settings className="h-4 w-4 text-muted-foreground" />
-              </CardHeader>
-              <CardContent>
-                <div className="text-2xl font-bold">{apiConfigs.length}</div>
-                <p className="text-xs text-muted-foreground">
-                  Integrações configuradas
-                </p>
-              </CardContent>
-            </Card>
-
-            <Card>
-              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                <CardTitle className="text-sm font-medium">Conectadas</CardTitle>
-                <CheckCircle className="h-4 w-4 text-green-600" />
-              </CardHeader>
-              <CardContent>
-                <div className="text-2xl font-bold text-green-600">
-                  {apiConfigs.filter(api => api.status === 'connected').length}
-                </div>
-                <p className="text-xs text-muted-foreground">
-                  Funcionando normalmente
-                </p>
-              </CardContent>
-            </Card>
-
-            <Card>
-              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                <CardTitle className="text-sm font-medium">Com Erro</CardTitle>
-                <AlertTriangle className="h-4 w-4 text-red-600" />
-              </CardHeader>
-              <CardContent>
-                <div className="text-2xl font-bold text-red-600">
-                  {apiConfigs.filter(api => api.status === 'error').length}
-                </div>
-                <p className="text-xs text-muted-foreground">
-                  Requerem atenção
-                </p>
-              </CardContent>
-            </Card>
-
-            <Card>
-              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                <CardTitle className="text-sm font-medium">Ativas</CardTitle>
-                <Key className="h-4 w-4 text-muted-foreground" />
-              </CardHeader>
-              <CardContent>
-                <div className="text-2xl font-bold">
-                  {apiConfigs.filter(api => api.isActive).length}
-                </div>
-                <p className="text-xs text-muted-foreground">
-                  Sincronizando dados
-                </p>
-              </CardContent>
-            </Card>
+            <MetricCard 
+              title="Total de APIs" 
+              value={apiConfigs.length.toString()} 
+              icon={<Settings className="h-4 w-4 text-muted-foreground" />} 
+              description="Integrações configuradas"
+            />
+            <MetricCard 
+              title="Conectadas" 
+              value={apiConfigs.filter(api => api.status === 'connected').length.toString()} 
+              icon={<CheckCircle className="h-4 w-4 text-green-600" />} 
+              description="Funcionando normalmente"
+            />
+            <MetricCard 
+              title="Com Erro" 
+              value={apiConfigs.filter(api => api.status === 'error').length.toString()} 
+              icon={<AlertTriangle className="h-4 w-4 text-red-600" />} 
+              description="Requerem atenção"
+            />
+            <MetricCard 
+              title="Ativas" 
+              value={apiConfigs.filter(api => api.isActive).length.toString()} 
+              icon={<Key className="h-4 w-4 text-muted-foreground" />} 
+              description="Sincronizando dados"
+            />
           </div>
 
-          {/* Lista de Integrações */}
           <div className="grid gap-4">
             {apiConfigs.map((api) => (
               <Card key={api.id}>
@@ -291,10 +231,9 @@ export default function SettingsPage() {
                       </div>
                     </div>
                     <div className="flex items-center gap-2">
-                      <Badge className={getStatusColor(api.status)}>
-                        {getStatusIcon(api.status)}
-                        <span className="ml-1">{getStatusText(api.status)}</span>
-                      </Badge>
+                      <StatusIndicator 
+                        status={api.status as 'connected' | 'disconnected' | 'error' | 'pending'} 
+                      />
                       <Switch
                         checked={api.isActive}
                         onCheckedChange={(checked: boolean) => {
@@ -400,70 +339,86 @@ export default function SettingsPage() {
 
               <div className="space-y-2">
                 <label className="text-sm font-medium">Intervalo de Sincronização</label>
-                <select 
-                  className="w-full p-2 border rounded-md"
-                  value={generalConfig.syncInterval}
-                  onChange={(e) => 
-                    setGeneralConfig(prev => ({ ...prev, syncInterval: Number(e.target.value) }))
+                <Select 
+                  value={generalConfig.syncInterval.toString()}
+                  onValueChange={(value) => 
+                    setGeneralConfig(prev => ({ ...prev, syncInterval: Number(value) }))
                   }
                 >
-                  <option value={15}>15 minutos</option>
-                  <option value={30}>30 minutos</option>
-                  <option value={60}>1 hora</option>
-                  <option value={120}>2 horas</option>
-                  <option value={240}>4 horas</option>
-                  <option value={480}>8 horas</option>
-                  <option value={1440}>24 horas</option>
-                </select>
+                  <SelectTrigger>
+                    <SelectValue placeholder="Selecione o intervalo" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="15">15 minutos</SelectItem>
+                    <SelectItem value="30">30 minutos</SelectItem>
+                    <SelectItem value="60">1 hora</SelectItem>
+                    <SelectItem value="120">2 horas</SelectItem>
+                    <SelectItem value="240">4 horas</SelectItem>
+                    <SelectItem value="480">8 horas</SelectItem>
+                    <SelectItem value="1440">24 horas</SelectItem>
+                  </SelectContent>
+                </Select>
               </div>
 
               <div className="space-y-2">
                 <label className="text-sm font-medium">Retenção de Dados</label>
-                <select 
-                  className="w-full p-2 border rounded-md"
-                  value={generalConfig.dataRetention}
-                  onChange={(e) => 
-                    setGeneralConfig(prev => ({ ...prev, dataRetention: Number(e.target.value) }))
+                <Select 
+                  value={generalConfig.dataRetention.toString()}
+                  onValueChange={(value) => 
+                    setGeneralConfig(prev => ({ ...prev, dataRetention: Number(value) }))
                   }
                 >
-                  <option value={90}>90 dias</option>
-                  <option value={180}>6 meses</option>
-                  <option value={365}>1 ano</option>
-                  <option value={730}>2 anos</option>
-                  <option value={1095}>3 anos</option>
-                </select>
+                  <SelectTrigger>
+                    <SelectValue placeholder="Selecione o período" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="90">90 dias</SelectItem>
+                    <SelectItem value="180">6 meses</SelectItem>
+                    <SelectItem value="365">1 ano</SelectItem>
+                    <SelectItem value="730">2 anos</SelectItem>
+                    <SelectItem value="1095">3 anos</SelectItem>
+                  </SelectContent>
+                </Select>
               </div>
 
               <div className="space-y-2">
                 <label className="text-sm font-medium">Fuso Horário</label>
-                <select 
-                  className="w-full p-2 border rounded-md"
+                <Select 
                   value={generalConfig.timezone}
-                  onChange={(e) => 
-                    setGeneralConfig(prev => ({ ...prev, timezone: e.target.value }))
+                  onValueChange={(value) => 
+                    setGeneralConfig(prev => ({ ...prev, timezone: value }))
                   }
                 >
-                  <option value="America/Sao_Paulo">São Paulo (UTC-3)</option>
-                  <option value="America/New_York">Nova York (UTC-5)</option>
-                  <option value="Europe/London">Londres (UTC+0)</option>
-                  <option value="Asia/Tokyo">Tóquio (UTC+9)</option>
-                </select>
+                  <SelectTrigger>
+                    <SelectValue placeholder="Selecione o fuso horário" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="America/Sao_Paulo">São Paulo (UTC-3)</SelectItem>
+                    <SelectItem value="America/New_York">Nova York (UTC-5)</SelectItem>
+                    <SelectItem value="Europe/London">Londres (UTC+0)</SelectItem>
+                    <SelectItem value="Asia/Tokyo">Tóquio (UTC+9)</SelectItem>
+                  </SelectContent>
+                </Select>
               </div>
 
               <div className="space-y-2">
                 <label className="text-sm font-medium">Moeda Padrão</label>
-                <select 
-                  className="w-full p-2 border rounded-md"
+                <Select 
                   value={generalConfig.currency}
-                  onChange={(e) => 
-                    setGeneralConfig(prev => ({ ...prev, currency: e.target.value }))
+                  onValueChange={(value) => 
+                    setGeneralConfig(prev => ({ ...prev, currency: value }))
                   }
                 >
-                  <option value="BRL">Real Brasileiro (BRL)</option>
-                  <option value="USD">Dólar Americano (USD)</option>
-                  <option value="EUR">Euro (EUR)</option>
-                  <option value="GBP">Libra Esterlina (GBP)</option>
-                </select>
+                  <SelectTrigger>
+                    <SelectValue placeholder="Selecione a moeda" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="BRL">Real Brasileiro (BRL)</SelectItem>
+                    <SelectItem value="USD">Dólar Americano (USD)</SelectItem>
+                    <SelectItem value="EUR">Euro (EUR)</SelectItem>
+                    <SelectItem value="GBP">Libra Esterlina (GBP)</SelectItem>
+                  </SelectContent>
+                </Select>
               </div>
             </CardContent>
           </Card>
@@ -513,12 +468,17 @@ export default function SettingsPage() {
                 <p className="text-sm text-muted-foreground mb-2">
                   Configurar rotação automática de chaves de API
                 </p>
-                <select className="w-full p-2 border rounded-md">
-                  <option value="never">Nunca</option>
-                  <option value="30">30 dias</option>
-                  <option value="60">60 dias</option>
-                  <option value="90">90 dias</option>
-                </select>
+                <Select>
+                  <SelectTrigger>
+                    <SelectValue placeholder="Selecione o período" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="never">Nunca</SelectItem>
+                    <SelectItem value="30">30 dias</SelectItem>
+                    <SelectItem value="60">60 dias</SelectItem>
+                    <SelectItem value="90">90 dias</SelectItem>
+                  </SelectContent>
+                </Select>
               </div>
             </CardContent>
           </Card>
@@ -583,17 +543,15 @@ export default function SettingsPage() {
                 <div className="grid grid-cols-2 gap-4">
                   <div>
                     <label className="text-xs text-muted-foreground">Das</label>
-                    <input 
+                    <Input 
                       type="time" 
-                      className="w-full p-2 border rounded-md"
                       defaultValue="09:00"
                     />
                   </div>
                   <div>
                     <label className="text-xs text-muted-foreground">Até</label>
-                    <input 
+                    <Input 
                       type="time" 
-                      className="w-full p-2 border rounded-md"
                       defaultValue="18:00"
                     />
                   </div>
@@ -603,6 +561,6 @@ export default function SettingsPage() {
           </Card>
         </TabsContent>
       </Tabs>
-    </div>
+    </Layout>
   );
 }
