@@ -88,7 +88,7 @@ export const CustomSegments: React.FC<CustomSegmentsProps> = ({
       name: 'Abandoned Cart',
       description: 'Usuários que abandonaram carrinho nos últimos 7 dias',
       criteria: [
-        { id: '5', field: 'cart_abandoned', operator: '=', value: true, type: 'behavioral' },
+        { id: '5', field: 'cart_abandoned', operator: '=', value: 'true', type: 'behavioral' },
         { id: '6', field: 'days_since', operator: '<=', value: 7, type: 'behavioral' }
       ],
       users: 1250,

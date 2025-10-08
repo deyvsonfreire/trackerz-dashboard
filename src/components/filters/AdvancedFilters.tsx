@@ -19,6 +19,16 @@ import {
 } from 'lucide-react';
 
 /**
+ * Interface para um filtro personalizado
+ */
+export interface CustomFilter {
+  id: string;
+  field: string;
+  operator: string;
+  value: string;
+}
+
+/**
  * Interface para o estado dos filtros avançados
  */
 export interface AdvancedFiltersState {
@@ -37,12 +47,7 @@ export interface AdvancedFiltersState {
   metrics: string[];
   segments: string[];
   devices: string[];
-  customFilters: Array<{
-    id: string;
-    field: string;
-    operator: string;
-    value: string;
-  }>;
+  customFilters: CustomFilter[];
 }
 
 /**
@@ -264,7 +269,7 @@ export const AdvancedFilters: React.FC<AdvancedFiltersProps> = ({
     onFiltersChange(updatedFilters);
   };
 
-  const updateCustomFilter = (id: string, field: string, value: string) => {
+  const updateCustomFilter = (id: string, field: keyof CustomFilter, value: string) => {
     const updatedFilters = {
       ...filters,
       customFilters: filters.customFilters.map(filter =>
@@ -665,7 +670,7 @@ export const AdvancedFilters: React.FC<AdvancedFiltersProps> = ({
               </Button>
             </div>
 
-            {filters.customFilters.map((filter, index) => (
+            {filters.customFilters.map((filter) => (
               <div key={filter.id} className="grid grid-cols-1 md:grid-cols-4 gap-3 p-3 border rounded-lg bg-gray-50">
                 {/* Campo */}
                 <div className="col-span-1">

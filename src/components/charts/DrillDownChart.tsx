@@ -15,7 +15,8 @@ import {
   Cell,
   LineChart,
   Line,
-  Legend
+  Legend,
+  PieLabelRenderProps
 } from 'recharts';
 import { ArrowLeft, TrendingUp, Eye, MousePointer } from 'lucide-react';
 
@@ -27,8 +28,11 @@ export interface DrillDownData {
   name: string;
   value: number;
   children?: DrillDownData[];
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   metadata?: Record<string, any>;
   color?: string;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  [key: string]: any;
 }
 
 /**
@@ -83,8 +87,10 @@ export const DrillDownChart: React.FC<DrillDownChartProps> = ({
   /**
    * Manipula o clique em um elemento do gráfico para drill-down
    */
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const handleDrillDown = useCallback((item: any) => {
-    const dataItem = currentData.find(d => d.name === item.name || d.id === item.id);
+    if (!item) return;
+    const dataItem = item.payload || item;
     
     if (dataItem && dataItem.children && dataItem.children.length > 0) {
       setBreadcrumb(prev => [...prev, dataItem]);
@@ -202,7 +208,10 @@ export const DrillDownChart: React.FC<DrillDownChartProps> = ({
           cx="50%"
           cy="50%"
           labelLine={false}
-          label={({ name, percent }) => `${name} ${(percent * 100).toFixed(0)}%`}
+          label={(props: PieLabelRenderProps) => {
+            if (props.percent == null || !props.name) return '';
+            return `${props.name} ${((props.percent as number) * 100).toFixed(0)}%`;
+          }}
           outerRadius={80}
           fill="#8884d8"
           dataKey={config.dataKey}

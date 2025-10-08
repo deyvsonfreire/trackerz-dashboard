@@ -133,7 +133,7 @@ export const useAdvancedFilters = () => {
   /**
    * Função para filtrar dados baseado nos filtros ativos
    */
-  const filterData = useCallback(<T extends Record<string, any>>(
+  const filterData = useCallback(<T extends Record<string, unknown>>(
     data: T[],
     options: {
       channelField?: keyof T;
@@ -145,7 +145,7 @@ export const useAdvancedFilters = () => {
     return data.filter(item => {
       // Filtro por canal
       if (filters.channels.length > 0 && options.channelField) {
-        const itemChannel = item[options.channelField];
+        const itemChannel = item[options.channelField] as string;
         if (!filters.channels.includes(itemChannel)) {
           return false;
         }
@@ -153,7 +153,7 @@ export const useAdvancedFilters = () => {
 
       // Filtro por região
       if (filters.regions.length > 0 && options.regionField) {
-        const itemRegion = item[options.regionField];
+        const itemRegion = item[options.regionField] as string;
         if (!filters.regions.includes(itemRegion)) {
           return false;
         }
@@ -161,7 +161,7 @@ export const useAdvancedFilters = () => {
 
       // Filtro por data
       if (options.dateField) {
-        const itemDate = new Date(item[options.dateField]);
+        const itemDate = new Date(item[options.dateField] as string | number | Date);
         const { start, end } = getDateRange;
         if (itemDate < start || itemDate > end) {
           return false;
@@ -175,7 +175,7 @@ export const useAdvancedFilters = () => {
   /**
    * Função para aplicar filtros de métricas aos dados
    */
-  const applyMetricFilters = useCallback(<T extends Record<string, any>>(
+  const applyMetricFilters = useCallback(<T extends Record<string, unknown>>(
     data: T[],
     availableMetrics: (keyof T)[]
   ): Partial<T>[] => {
@@ -187,16 +187,16 @@ export const useAdvancedFilters = () => {
       const filteredItem: Partial<T> = {};
       
       // Sempre incluir campos de identificação
-      if ('id' in item) (filteredItem as any).id = item.id;
-      if ('name' in item) (filteredItem as any).name = item.name;
-      if ('date' in item) (filteredItem as any).date = item.date;
-      if ('channel' in item) (filteredItem as any).channel = item.channel;
-      if ('region' in item) (filteredItem as any).region = item.region;
+      if ('id' in item) (filteredItem as Record<string, unknown>).id = item.id;
+      if ('name' in item) (filteredItem as Record<string, unknown>).name = item.name;
+      if ('date' in item) (filteredItem as Record<string, unknown>).date = item.date;
+      if ('channel' in item) (filteredItem as Record<string, unknown>).channel = item.channel;
+      if ('region' in item) (filteredItem as Record<string, unknown>).region = item.region;
 
       // Incluir apenas métricas selecionadas
       availableMetrics.forEach(metric => {
         if (filters.metrics.includes(metric as string)) {
-          (filteredItem as any)[metric] = item[metric];
+          (filteredItem as Record<string, unknown>)[metric as string] = item[metric];
         }
       });
 

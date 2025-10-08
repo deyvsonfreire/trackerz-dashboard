@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState, useMemo } from 'react';
-import { ChevronUp, ChevronDown, Search, Download, Filter, MoreHorizontal } from 'lucide-react';
+import { ChevronUp, ChevronDown, Search, Download } from 'lucide-react';
 import { cn } from '@/utils/cn';
 import { Button } from './Button';
 import { Input } from './input';
@@ -72,7 +72,7 @@ type SortDirection = 'asc' | 'desc' | null;
  * @param props - DataTable component props
  * @returns JSX element representing the data table
  */
-export const DataTable = <T extends Record<string, any>>({
+export const DataTable = <TData extends Record<string, unknown>>({
   data,
   columns,
   loading = false,
@@ -87,9 +87,9 @@ export const DataTable = <T extends Record<string, any>>({
   className,
   pageSize = 10,
   paginated = true,
-}: DataTableProps<T>) => {
+}: DataTableProps<TData>) => {
   const [searchTerm, setSearchTerm] = useState('');
-  const [sortColumn, setSortColumn] = useState<string | null>(null);
+  const [sortColumn, setSortColumn] = useState<keyof TData | null>(null);
   const [sortDirection, setSortDirection] = useState<SortDirection>(null);
   const [currentPage, setCurrentPage] = useState(1);
 
@@ -102,7 +102,7 @@ export const DataTable = <T extends Record<string, any>>({
       filtered = data.filter((row) =>
         columns.some((column) => {
           if (!column.filterable) return false;
-          const value = row[column.key];
+          const value = row[column.key as keyof TData];
           return String(value).toLowerCase().includes(searchTerm.toLowerCase());
         })
       );
@@ -143,7 +143,7 @@ export const DataTable = <T extends Record<string, any>>({
         setSortColumn(null);
       }
     } else {
-      setSortColumn(columnKey);
+      setSortColumn(columnKey as keyof TData);
       setSortDirection('asc');
     }
   };
@@ -153,7 +153,7 @@ export const DataTable = <T extends Record<string, any>>({
     const headers = columns.map(col => col.label).join(',');
     const rows = processedData.map(row =>
       columns.map(col => {
-        const value = row[col.key];
+        const value = row[col.key as keyof TData];
         return typeof value === 'string' && value.includes(',') ? `"${value}"` : value;
       }).join(',')
     );
@@ -294,8 +294,8 @@ export const DataTable = <T extends Record<string, any>>({
                         )}
                       >
                         {column.render
-                          ? column.render(row[column.key], row, index)
-                          : row[column.key]}
+                          ? column.render(row[column.key as keyof TData], row, index)
+                          : String(row[column.key as keyof TData])}
                       </td>
                     ))}
                     {showActions && (

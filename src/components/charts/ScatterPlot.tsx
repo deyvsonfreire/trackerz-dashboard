@@ -26,8 +26,6 @@ interface ScatterPlotProps {
   height?: number;
   /** Cores personalizadas para diferentes categorias */
   colors?: string[];
-  /** Função de formatação para tooltip */
-  tooltipFormatter?: (value: unknown, name: string) => [string, string];
   /** Mostrar linha de tendência */
   showTrendLine?: boolean;
   /** Classe CSS adicional */
@@ -45,7 +43,6 @@ export const ScatterPlot: React.FC<ScatterPlotProps> = ({
   yAxisLabel,
   height = 400,
   colors = ['#3B82F6', '#EF4444', '#10B981', '#F59E0B', '#8B5CF6', '#EC4899'],
-  tooltipFormatter,
   showTrendLine = false,
   className = ''
 }) => {

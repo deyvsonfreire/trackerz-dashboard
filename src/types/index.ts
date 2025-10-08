@@ -1,18 +1,20 @@
 export interface Platform {
   id: string;
   name: string;
-  type: 'social' | 'ads' | 'email' | 'crm' | 'analytics';
-  status: 'active' | 'inactive' | 'error';
-  isActive: boolean;
-  lastSync: Date;
-  accountsCount: number;
-  apiKey?: string;
+  type: string;
+  is_active: boolean;
+  last_sync_at?: string;
+  oauth_config?: {
+    accessToken?: string;
+    refreshToken?: string;
+  };
 }
 
 export interface Account {
   id: string;
   name: string;
   platformId: string;
+  platforms: Platform;
   accountId: string;
   status: 'active' | 'inactive' | 'suspended';
   isActive: boolean;

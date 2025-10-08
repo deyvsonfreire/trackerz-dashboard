@@ -13,7 +13,6 @@ import {
   TrendingDown
 } from 'lucide-react';
 import { cn } from '@/utils/cn';
-import { Button } from './Button';
 import { Badge } from './badge';
 
 /**
@@ -25,18 +24,6 @@ export type AlertType = 'success' | 'warning' | 'error' | 'info' | 'metric';
  * Alert priority levels
  */
 export type AlertPriority = 'low' | 'medium' | 'high' | 'critical';
-
-/**
- * Alert action definition
- */
-export interface AlertAction {
-  /** Action label */
-  label: string;
-  /** Action handler */
-  onClick: () => void;
-  /** Action variant */
-  variant?: 'default' | 'outline' | 'secondary';
-}
 
 /**
  * Props for AlertBanner component
@@ -60,8 +47,8 @@ export interface AlertBannerProps {
   dismissible?: boolean;
   /** Callback when alert is dismissed */
   onDismiss?: () => void;
-  /** Alert actions */
-  actions?: AlertAction[];
+  /** Render prop for actions */
+  renderActions?: () => React.ReactNode;
   /** Custom icon */
   icon?: React.ReactNode;
   /** Timestamp */
@@ -92,7 +79,7 @@ export const AlertBanner: React.FC<AlertBannerProps> = ({
   metricUnit,
   dismissible = true,
   onDismiss,
-  actions = [],
+  renderActions,
   icon,
   timestamp,
   showTimestamp = true,
@@ -248,85 +235,56 @@ export const AlertBanner: React.FC<AlertBannerProps> = ({
               )}
             </div>
 
-            {/* Timestamp and dismiss */}
-            <div className="flex items-center space-x-2">
-              {showTimestamp && timestamp && (
-                <div className="flex items-center space-x-1 text-xs text-gray-500">
-                  <Clock className="h-3 w-3" />
-                  <span>{formatTimestamp(timestamp)}</span>
-                </div>
-              )}
-
-              {dismissible && (
-                <button
-                  onClick={handleDismiss}
-                  className={cn(
-                    'p-1 rounded-full hover:bg-black/10 transition-colors',
-                    config.textColor
-                  )}
-                >
-                  <X className="h-4 w-4" />
-                </button>
-              )}
-            </div>
+            {dismissible && (
+              <button
+                onClick={handleDismiss}
+                className={cn(
+                  'ml-auto -mx-1.5 -my-1.5 rounded-lg p-1.5 inline-flex items-center justify-center',
+                  config.textColor,
+                  'hover:bg-opacity-20 hover:bg-current'
+                )}
+              >
+                <X className="h-4 w-4" />
+              </button>
+            )}
           </div>
 
           {/* Message */}
           {message && (
-            <p className={cn(
-              config.textColor,
-              sizeConfig.messageSize,
-              'mb-3'
-            )}>
-              {message}
-            </p>
+            <p className={cn('text-sm', config.textColor)}>{message}</p>
           )}
 
-          {/* Metric display */}
-          {type === 'metric' && metricValue !== undefined && (
-            <div className="flex items-center space-x-4 mb-3">
-              <div className="flex items-baseline space-x-1">
-                <span className="text-2xl font-bold text-purple-900">
-                  {typeof metricValue === 'number' ? metricValue.toLocaleString() : metricValue}
-                </span>
-                {metricUnit && (
-                  <span className="text-sm text-purple-700">{metricUnit}</span>
-                )}
-              </div>
-
+          {/* Metric */}
+          {type === 'metric' && (
+            <div className="flex items-center mt-2">
+              <span className={cn('text-2xl font-bold', config.textColor)}>
+                {metricValue}
+                {metricUnit && <span className="text-base ml-1">{metricUnit}</span>}
+              </span>
               {metricChange !== undefined && (
-                <div className="flex items-center space-x-1">
-                  {metricChange > 0 ? (
-                    <TrendingUp className="h-4 w-4 text-green-600" />
-                  ) : metricChange < 0 ? (
-                    <TrendingDown className="h-4 w-4 text-red-600" />
-                  ) : null}
-                  <span className={cn(
-                    'text-sm font-medium',
-                    metricChange > 0 ? 'text-green-600' : 
-                    metricChange < 0 ? 'text-red-600' : 'text-gray-600'
-                  )}>
-                    {metricChange > 0 ? '+' : ''}{metricChange.toFixed(1)}%
-                  </span>
-                </div>
+                <span className={cn(
+                  'ml-2 flex items-center text-sm',
+                  metricChange >= 0 ? 'text-green-600' : 'text-red-600'
+                )}>
+                  {metricChange >= 0 ? <TrendingUp className="h-4 w-4 mr-1" /> : <TrendingDown className="h-4 w-4 mr-1" />}
+                  {Math.abs(metricChange)}%
+                </span>
               )}
             </div>
           )}
 
           {/* Actions */}
-          {actions.length > 0 && (
-            <div className="flex items-center space-x-2">
-              {actions.map((action, index) => (
-                <Button
-                  key={index}
-                  variant={action.variant || 'outline'}
-                  size="sm"
-                  onClick={action.onClick}
-                  className="text-xs"
-                >
-                  {action.label}
-                </Button>
-              ))}
+          {renderActions && (
+            <div className="mt-4 flex space-x-3">
+              {renderActions()}
+            </div>
+          )}
+
+          {/* Timestamp */}
+          {timestamp && showTimestamp && (
+            <div className="mt-2 flex items-center text-xs text-gray-500">
+              <Clock className="h-3 w-3 mr-1.5" />
+              {formatTimestamp(timestamp)}
             </div>
           )}
         </div>
@@ -336,29 +294,29 @@ export const AlertBanner: React.FC<AlertBannerProps> = ({
 };
 
 /**
- * Metric alert banner for displaying metric-based alerts
+ * Pre-styled alert banner for metric updates
  */
 export const MetricAlertBanner: React.FC<Omit<AlertBannerProps, 'type'>> = (props) => (
-  <AlertBanner {...props} type="metric" />
+  <AlertBanner type="metric" {...props} />
 );
 
 /**
- * Success alert banner
+ * Pre-styled alert banner for success messages
  */
 export const SuccessAlertBanner: React.FC<Omit<AlertBannerProps, 'type'>> = (props) => (
-  <AlertBanner {...props} type="success" />
+  <AlertBanner type="success" {...props} />
 );
 
 /**
- * Warning alert banner
+ * Pre-styled alert banner for warning messages
  */
 export const WarningAlertBanner: React.FC<Omit<AlertBannerProps, 'type'>> = (props) => (
-  <AlertBanner {...props} type="warning" />
+  <AlertBanner type="warning" {...props} />
 );
 
 /**
- * Error alert banner
+ * Pre-styled alert banner for error messages
  */
 export const ErrorAlertBanner: React.FC<Omit<AlertBannerProps, 'type'>> = (props) => (
-  <AlertBanner {...props} type="error" />
+  <AlertBanner type="error" {...props} />
 );

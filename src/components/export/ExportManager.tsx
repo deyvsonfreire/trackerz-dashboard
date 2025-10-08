@@ -9,19 +9,22 @@ import {
   FileText, 
   FileSpreadsheet, 
   Calendar,
-  Filter,
-  Settings,
   CheckCircle,
   Clock,
   AlertCircle
 } from 'lucide-react';
 
 /**
+ * Tipos de relatório para exportação
+ */
+export type ReportType = 'dashboard' | 'campaigns' | 'analytics' | 'custom';
+
+/**
  * Interface para configuração de exportação
  */
 export interface ExportConfig {
   format: 'pdf' | 'excel';
-  reportType: 'dashboard' | 'campaigns' | 'analytics' | 'custom';
+  reportType: ReportType;
   dateRange: {
     start: string;
     end: string;
@@ -150,7 +153,7 @@ export const ExportManager: React.FC<ExportManagerProps> = ({
     if (onExport) {
       try {
         await onExport(exportConfig);
-      } catch (error) {
+      } catch {
         setExportHistory(prev => 
           prev.map(exp => 
             exp.id === newExport.id 
@@ -257,7 +260,7 @@ export const ExportManager: React.FC<ExportManagerProps> = ({
                   <label className="block text-sm font-medium mb-2">Tipo de Relatório</label>
                   <select
                     value={exportConfig.reportType}
-                    onChange={(e) => setExportConfig(prev => ({ ...prev, reportType: e.target.value as any }))}
+                    onChange={(e) => setExportConfig(prev => ({ ...prev, reportType: e.target.value as ReportType }))}
                     className="w-full p-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                   >
                     <option value="dashboard">Dashboard Executivo</option>

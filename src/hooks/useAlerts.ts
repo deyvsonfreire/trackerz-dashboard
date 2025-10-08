@@ -21,7 +21,7 @@ interface MetricData {
 export const useAlerts = () => {
   const [alerts, setAlerts] = useState<AlertConfig[]>([]);
   const [history, setHistory] = useState<AlertHistory[]>([]);
-  const [isLoading, setIsLoading] = useState(false);
+  const [isLoading] = useState(false);
 
   // Dados mockados de métricas para simulação
   const [currentMetrics, setCurrentMetrics] = useState<MetricData>({
@@ -42,12 +42,12 @@ export const useAlerts = () => {
     
     if (savedAlerts) {
       try {
-        const parsedAlerts = JSON.parse(savedAlerts).map((alert: any) => ({
+        const parsedAlerts = JSON.parse(savedAlerts).map((alert: Partial<AlertConfig>) => ({
           ...alert,
-          createdAt: new Date(alert.createdAt),
+          createdAt: new Date(alert.createdAt!),
           lastTriggered: alert.lastTriggered ? new Date(alert.lastTriggered) : undefined
         }));
-        setAlerts(parsedAlerts);
+        setAlerts(parsedAlerts as AlertConfig[]);
       } catch (error) {
         console.error('Erro ao carregar alertas:', error);
       }
@@ -55,11 +55,11 @@ export const useAlerts = () => {
 
     if (savedHistory) {
       try {
-        const parsedHistory = JSON.parse(savedHistory).map((item: any) => ({
+        const parsedHistory = JSON.parse(savedHistory).map((item: Partial<AlertHistory>) => ({
           ...item,
-          triggeredAt: new Date(item.triggeredAt)
+          triggeredAt: new Date(item.triggeredAt!)
         }));
-        setHistory(parsedHistory);
+        setHistory(parsedHistory as AlertHistory[]);
       } catch (error) {
         console.error('Erro ao carregar histórico de alertas:', error);
       }

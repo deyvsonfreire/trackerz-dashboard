@@ -299,7 +299,7 @@ export const SearchBox: React.FC<SearchBoxProps> = ({
                         className="w-full text-left px-2 py-2 text-sm text-gray-700 hover:bg-gray-50 rounded transition-colors flex items-center justify-between"
                       >
                         <span>{suggestion.text}</span>
-                        {suggestion.metadata?.count && (
+                        {suggestion.metadata?.count != null && (
                           <Badge variant="secondary" className="text-xs">
                             {String(suggestion.metadata.count)}
                           </Badge>

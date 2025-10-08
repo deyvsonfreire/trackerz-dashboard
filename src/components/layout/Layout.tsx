@@ -2,19 +2,20 @@
 
 import { useState, ReactNode } from 'react';
 import { Header } from './Header';
+import { Toaster } from '@/components/ui/Toaster';
 import { Sidebar } from './Sidebar';
 
 interface LayoutProps {
-  children: ReactNode;
   title: string;
   subtitle?: string;
+  children: ReactNode;
 }
 
 /**
- * Main layout component that wraps all pages
- * @param children - Page content to render
- * @param title - Page title for the header
+ * Main layout component for the application
+ * @param title - Main page title
  * @param subtitle - Optional page subtitle
+ * @param children - Page content
  */
 export function Layout({ children, title, subtitle }: LayoutProps) {
   const [sidebarOpen, setSidebarOpen] = useState(false);
@@ -42,6 +43,7 @@ export function Layout({ children, title, subtitle }: LayoutProps) {
           {children}
         </main>
       </div>
+      <Toaster />
     </div>
   );
 }

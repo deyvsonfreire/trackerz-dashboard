@@ -1,24 +1,24 @@
 'use client';
 
 import { useState, useCallback } from 'react';
-import { ExportConfig, ExportStatus } from '@/components/export/ExportManager';
+import { ExportConfig } from '@/components/export/ExportManager';
 
 /**
  * Interface para dados de exportação
  */
-export interface ExportData {
+export interface ExportData<T = Record<string, unknown>> {
   title: string;
   subtitle?: string;
-  data: any[];
+  data: T[];
   charts?: {
     type: 'bar' | 'line' | 'pie' | 'area';
-    data: any[];
+    data: T[];
     title: string;
   }[];
   tables?: {
     title: string;
     headers: string[];
-    rows: any[][];
+    rows: (string | number)[][];
   }[];
   summary?: {
     label: string;
@@ -191,7 +191,7 @@ export const useExport = () => {
   /**
    * Simula a geração de PDF
    */
-  const generatePDF = useCallback(async (data: ExportData, config: ExportConfig): Promise<string> => {
+  const generatePDF = useCallback(async (data: ExportData): Promise<string> => {
     // Simula processo de geração
     setExportProgress(25);
     await new Promise(resolve => setTimeout(resolve, 500));
@@ -214,7 +214,7 @@ export const useExport = () => {
   /**
    * Simula a geração de Excel
    */
-  const generateExcel = useCallback(async (data: ExportData, config: ExportConfig): Promise<string> => {
+  const generateExcel = useCallback(async (data: ExportData): Promise<string> => {
     // Simula processo de geração
     setExportProgress(30);
     await new Promise(resolve => setTimeout(resolve, 400));
@@ -248,9 +248,9 @@ export const useExport = () => {
       // Gera o arquivo baseado no formato
       let downloadUrl: string;
       if (config.format === 'pdf') {
-        downloadUrl = await generatePDF(data, config);
+        downloadUrl = await generatePDF(data);
       } else {
-        downloadUrl = await generateExcel(data, config);
+        downloadUrl = await generateExcel(data);
       }
 
       return downloadUrl;
@@ -266,8 +266,8 @@ export const useExport = () => {
   /**
    * Função para download rápido de dados específicos
    */
-  const quickExport = useCallback(async (
-    data: any[], 
+  const quickExport = useCallback(async <T extends Record<string, unknown>>(
+    data: T[], 
     filename: string, 
     format: 'csv' | 'json' = 'csv'
   ): Promise<void> => {
